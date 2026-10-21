@@ -1,7 +1,6 @@
-import path from 'node:path';
-import { PGlite } from '@electric-sql/pglite';
+import { Pool } from 'pg';
 import { and, eq, exists, inArray, isNull, lt, ne, notInArray, or, sql } from 'drizzle-orm';
-import { drizzle } from 'drizzle-orm/pglite';
+import { drizzle } from 'drizzle-orm/node-postgres';
 import { bigint, boolean, doublePrecision, integer, pgTable, text, timestamp, uniqueIndex } from 'drizzle-orm/pg-core';
 
 export const cmsArticles = pgTable('cms_articles', {
@@ -107,32 +106,24 @@ export const testimonials = pgTable('testimonials', {
   createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
 });
 
-const globalForCms = globalThis as typeof globalThis & { cmsClient?: PGlite };
+const globalForCms = globalThis as typeof globalThis & { cmsPool?: Pool };
 
-/**
- * PGlite — PostgreSQL asli (WASM) yang tertanam di dalam proses Node.
- * Data tersimpan permanen di disk sehingga aman untuk produksi ringan.
- */
-function resolvePgliteDataDir(): string {
-  const configured = process.env.PGLITE_DATA_DIR;
-  if (configured && configured.length > 0) return configured;
-  return path.join(process.cwd(), 'db', 'pglite-data');
-}
+const cmsPool = globalForCms.cmsPool ?? new Pool({
+  connectionString: process.env.DATABASE_URL,
+  max: 5,
+});
 
-const pglite = globalForCms.cmsClient ?? new PGlite(resolvePgliteDataDir());
+if (process.env.NODE_ENV !== 'production') globalForCms.cmsPool = cmsPool;
 
-if (process.env.NODE_ENV !== 'production') globalForCms.cmsClient = pglite;
-
-/** Adapter ringan menyerupai client `pg.Pool` untuk pemakaian SQL mentah. */
 export const rawCmsClient = {
   query: async <T = Record<string, unknown>>(text: string, params?: unknown[]) => {
-    const result = await pglite.query<T>(text, params as unknown[]);
-    return { rows: result.rows as T[], rowCount: result.affectedRows ?? result.rows.length };
+    const result = await cmsPool.query<T>(text, params);
+    return { rows: result.rows, rowCount: result.rowCount ?? result.rows.length };
   },
   release: () => undefined,
 };
 
-export const cmsDb = drizzle(pglite, { schema: { cmsArticles, cmsSettings, categories, products, testimonials, productImageAssets } });
+export const cmsDb = drizzle(cmsPool, { schema: { cmsArticles, cmsSettings, categories, products, testimonials, productImageAssets } });
 
 export const CMS_BACKUP_PUBLIC_TABLES = [
   'articles',
