@@ -1,3 +1,122 @@
+# 📜 WORKLOG — BERKAT MANDIRI PENDINGIN
+
+<div align="center">
+
+### *Kronik Lengkap Evolusi Sebuah Website — Dari Repo Kosong Menjadi Katalog HVAC Terbesar yang Pernah Dibangun*
+
+![Status](https://img.shields.io/badge/Status-PRODUKSI_AKTIF-10B981?style=for-the-badge)
+![Entri](https://img.shields.io/badge/Entri_Worklog-20_SEKSI-8B5CF6?style=for-the-badge)
+![Produk](https://img.shields.io/badge/Produk-620-0F9D58?style=for-the-badge)
+![Gambar](https://img.shields.io/badge/Gambar-523_File-FF6F00?style=for-the-badge)
+![Sitemap](https://img.shields.io/badge/Sitemap-623_URL-4285F4?style=for-the-badge&logo=google&logoColor=white)
+
+**Dikelola oleh:** Z.ai Code — Main Orchestrator & Dewan Sub-Agent
+**Repositori asal:** `github.com/prabudanling/bmp` · **Produk:** PT Berkat Mandiri Pendingin (MM2100, Bekasi — sejak 2010)
+
+</div>
+
+> 🗝️ **Konvensi worklog ini:** setiap seksi WAJIB diawali baris `---`, mencantumkan `Task ID`, `Agent`, `Task`, `Work Log` (langkah konkret), dan `Stage Summary` (hasil/keputusan/artefak). Entri **tidak pernah ditimpa** — sejarah adalah guru terbaik proyek. Entri baru selalu ditambahkan di **akhir** file.
+
+---
+
+## 📊 DASBOR EKSEKUTIF — Kondisi Proyek Saat Ini
+
+| Metrik | Nilai | Bukti Verifikasi |
+|---|---:|---|
+| 🛒 **Total produk di database (PGlite)** | **620** | `SELECT COUNT(*) FROM products` → 620 |
+| 🗂️ **Total kategori** | **19** | 10 kategori asli + 9 sub-kategori kompresor |
+| 💥 **Produk kompresor** | **558** | 58 original + **500 baru** hasil SUPER GENERATOR |
+| 🏭 **Brand dunia** | **25** | Bitzer, Copeland, Daikin, Panasonic, LG, Gree, Danfoss, Carrier, dst. |
+| 🖼️ **Gambar produk kompresor unik** | **512** | 12 base AI studio + 500 derivatif branded (webp 800×800, ~22 MB) |
+| 🗺️ **URL terindeks sitemap** | **623** | `curl /sitemap.xml \| grep -c "<url>"` → 623 |
+| ⭐ **Testimoni pelanggan** | **7** | Migrasi utuh SQLite → PGlite |
+| 🧪 **Audit aset `check:assets`** | 🟢 24/24 | exit code 0 |
+| 🧹 **ESLint** | ✅ 0 error | `bun run lint` |
+| 🌐 **Rute hidup** | **8** | `/`, `/produk`, `/produk/[slug]`, `/insights`, `/admin`, `/sitemap.xml`, `/robots.txt`, `/llms.txt` — semua 200 |
+| 🔍 **SEO JSON-LD** | **5 tipe** | Organization, LocalBusiness, WebSite, Product+Offer+FAQPage, BreadcrumbList |
+| 🤖 **Siap AI Search** | ✅ | `llms.txt` untuk ChatGPT / Perplexity / Google AI |
+
+---
+
+## 🗺️ PETA PERJALANAN — 6 Era Pengembangan
+
+```text
+ERA I  ══▶ ERA II ══▶ ERA III ══▶ ERA IV  ══▶ ERA V   ══▶ ERA VI
+Fondasi    Ekspansi    Restorasi    Revolusi      Stabilisasi   Legendaris
+13 section Ungguli      Re-install   +500 produk   Preview fix   Worklog &
+animasi    polarin     + SEO total  +512 gambar   + keamanan    README terbaik
+kontras    static      dwi-bahasa   + PGlite      header        dokumentasi
+           export      + anti-sakit audit aset
+```
+
+---
+
+## 🗂️ INDEKS MASTER — 20 Seksi Worklog
+
+| # | Task ID | Era | Agent | Misi | Status |
+|:-:|:-:|:-:|---|---|:-:|
+| 1 | 1 | I | Main | Fix hydration mismatch, kontras warna, animasi, responsivitas | ✅ |
+| 2 | 2 | I | Main | BrandPartners — marquee dua baris 21 brand tak berujung | ✅ |
+| 3 | 3 | I | Main | AboutSection — profil perusahaan + visi misi + statistik | ✅ |
+| 4 | 4 | I | Main | ServiceCoverage — 6 wilayah, 26+ kota se-Indonesia | ✅ |
+| 5 | 5 | I | Main | GallerySection — 3 video + 3 foto dokumentasi | ✅ |
+| 6 | 6 | I | Main | Header search + sosial media; Footer cabang + layanan | ✅ |
+| 7 | 7 | I | Main | Filter brand di katalog + PromoBanner dua kartu | ✅ |
+| 8 | 2 | II | Main + Sub-agents | Supremasi melampaui polarin.co.id — 6 section baru, 22 produk | ✅ |
+| 9 | 3 | II | Main | Konversi Static Export — hidup tanpa Node.js | ✅ |
+| 10 | 4 | II | Sub-agent | Dokumen PRD DOCX profesional (11 bab, 3000+ kata) | ✅ |
+| 11 | 1 | III | Main | Re-install repo GitHub + fix 2 bug visual warisan | ✅ |
+| 12 | 2 | III | Main | Aksesibilitas — DialogTitle & aria-describedby Radix UI | ✅ |
+| 13 | 3 | III | Main | Grid 8 ubin "Spesialisasi Kami" di AboutSection | ✅ |
+| 14 | 4 | III | Main | Kredit premium dua PT + fondasi SEO total | ✅ |
+| 15 | 5 | III | Main | Dwi-bahasa ID/EN 320+ kunci + 5 halaman info + nol dead link | ✅ |
+| 16 | 6 | III | Main | Fix React key prop + penyelesaian terjemahan menyisa | ✅ |
+| 17 | 7 | III | Main | AUDIT ANTI "GAMBAR KOSONG" + tool `check:assets` + README v1 | ✅ |
+| 18 | 2 | IV | Main Orchestrator | 💥 **REVOLUSI: 500 produk kompresor + 512 gambar AI + PGlite + SEO supercharge** | ✅ |
+| 19 | 3 | V | Main Orchestrator | Perbaikan "preview refused to connect" (X-Frame-Options) | ✅ |
+| 20 | 4 | VI | Main Orchestrator | Worklog & README legendaris (dokumen ini) + fix script `start` | ✅ |
+
+---
+
+## 🏆 ATURAN EMAS — Pelajaran yang Wajib Diwariskan
+
+> Ditarik dari 20 entri nyata. Pelanggaran aturan ini = tragedi yang sudah pernah terjadi.
+
+| # | Aturan | Tragedi Asal |
+|:-:|---|---|
+| 1 | **`DATABASE_URL` harus relatif** (`file:../db/custom.db`) — path absolut = DB hantu kosong di mesin lain | Era III #17 — gambar & katalog kosong saat deploy |
+| 2 | **Jalankan `bun run check:assets` sebelum deploy** — exit ≠ 0 = BLOKIR upload | Era III #17 — gerbang predeploy |
+| 3 | **`db/custom.db` wajib ter-track git** + seed siap pakai — data tidak boleh hanya hidup di satu mesin | Era III #17 |
+| 4 | **Komponen Radix UI (Sheet/Dialog/Select) wajib NoSSR** — selain itu hydration mismatch | Era I #1 |
+| 5 | **Sheet/Dialog wajib punya Title** (+ `aria-describedby={undefined}` bila tanpa deskripsi) — kewajiban aksesibilitas | Era III #12 |
+| 6 | **Perubahan `next.config.ts` butuh restart penuh** (`rm -rf .next`) — Turbopack tidak hot-reload config | Era V #19 |
+| 7 | **Jangan set `X-Frame-Options: SAMEORIGIN`** bila situs akan di-embed iframe (preview panel) — pakai CSP `frame-ancestors` | Era V #19 |
+| 8 | **`useScroll({target})` butuh ancestor `position: relative`** — cek `html{position:relative}` di globals.css | Era III #17 (bonus) |
+| 9 | **Screenshot setelah animasi selesai** — framer-motion entrance membuat hero tampak kosong sesaat; tunggu ±4 detik | Era V #19 |
+| 10 | **Satu karakter pun bisa mematikan** (`key={label}` vs `key={labelKey}`) — audit SEMUA `.map()` saat menemui bug kelas sama | Era III #16 |
+| 11 | **Verifikasi browser end-to-end adalah standar "selesai"** — build sukses ≠ situs jalan (agent-browser wajib) | Semua era |
+| 12 | **Tidak ada hardcoded brand/category** — katalog harus universal; filter Embraco era lampau sudah dibuang | Era IV #18 |
+
+---
+
+## 💎 FUN FACTS PROYEK
+
+- 🤖 **12 gambar kompresor dibangkitkan AI** (fotografi studio: rotary, twin rotary, DC inverter, scroll, piston hermetik, semi-hermetik, screw, centrifugal, condensing unit, heavy industrial) lalu **500 gambar unik** diturunkan darinya dengan badge brand + tint warna + variasi zoom via `sharp`.
+- 🐘 **PostgreSQL tanpa server!** Karena sandbox melarang `apt install postgresql`, database live memakai **PGlite** — PostgreSQL penuh dalam WebAssembly, tertanam langsung di aplikasi Node.js, data persisten di `db/pglite-data/`.
+- 📝 **500 deskripsi SEO unik** dihasilkan dari rotasi 5 opener × 5 mid × 5 closer template + variabel (brand, HP, refrigerant, kota, aplikasi) — mustahil ada dua produk dengan deskripsi identik.
+- 🎯 Sitemap tumbuh **5× lipat** dalam satu era: 120 URL → **623 URL**.
+
+---
+<div align="center">
+
+## ═══════════════ 🏛️ ERA I — PEMBANGUNAN FONDASI ═══════════════
+
+### *Misi: mengubah kerangka repo menjadi situs 13-section beranimasi kelas dunia*
+
+**Task 1–7 · Agent: Main · 120 produk · 10 kategori · kontras, aksesibilitas, responsivitas**
+
+</div>
+
 ---
 Task ID: 1
 Agent: Main
@@ -254,6 +373,17 @@ Stage Summary:
 - Lint passes clean (0 errors)
 - Dev server compiled successfully with no errors
 
+
+<div align="center">
+
+## ═══════════════ 🚀 ERA II — SUPREMACI & EKSPANSI ═══════════════
+
+### *Misi: melampaui kompetitor polarin.co.id + kemampuan deploy di mana saja*
+
+**Task 2–4 · Agent: Main + Sub-agents · 6 section baru · static export 2.9 MB · PRD DOCX**
+
+</div>
+
 ---
 Task ID: 2
 Agent: Main + Sub-agents
@@ -340,6 +470,17 @@ Stage Summary:
 - postcheck.py: 0 errors, 2 warnings (blank-pages PageBreak, line-spacing expected in TOC/cover)
 - add_toc_placeholders.py: 42 headings extracted, 42 TOC placeholders inserted, outlineLvl fixed
 - All checks passed, document ready for delivery
+
+
+<div align="center">
+
+## ═══════════════ 🛠️ ERA III — RESTORASI & PENGUATAN ═══════════════
+
+### *Misi: re-install dari GitHub, basmi bug warisan, bangun benteng SEO & anti-tragedi gambar*
+
+**Task 1–7 · Agent: Main (Z.ai Code) · SEO foundation · dwi-bahasa · `check:assets`**
+
+</div>
 
 ---
 Task ID: 1
@@ -497,6 +638,17 @@ Stage Summary:
 - Bom waktu DATABASE_URL absolut dinetralkan — deploy ke mesin mana pun tidak akan pernah kosong lagi
 - README kelas dunia terpasang; repo siap dipush/diupload dengan bangga
 
+
+<div align="center">
+
+## ═══════════════ 💥 ERA IV — REVOLUSI 500 PRODUK & DOMINASI SEO ═══════════════
+
+### *Misi utama sang maestro: 500 produk kompresor baru + gambar AI + deskripsi SEO menuju peringkat #1 Google*
+
+**Task 2 · Agent: Z.ai Code (Main Orchestrator) · 620 produk total · 512 gambar · PGlite · sitemap 623 URL**
+
+</div>
+
 ---
 Task ID: 2
 Agent: Z.ai Code (Main Orchestrator)
@@ -532,6 +684,17 @@ Stage Summary:
 - Semua rute 200: /, /produk, /produk/[slug], /sitemap.xml, /robots.txt, /llms.txt
 - Lint exit 0, tanpa error runtime di dev.log
 
+
+<div align="center">
+
+## ═══════════════ 🔧 ERA V — STABILISASI PRODUKSI ═══════════════
+
+### *Misi: memastikan setiap pintu masuk pengunjung — termasuk Preview Panel — terbuka mulus*
+
+**Task 3 · Agent: Z.ai Code (Main Orchestrator) · perbaikan iframe & header keamanan**
+
+</div>
+
 ---
 Task ID: 3
 Agent: Z.ai Code (Main Orchestrator)
@@ -550,3 +713,33 @@ Stage Summary:
 - Preview Panel kini dapat memuat situs (X-Frame-Options tidak lagi memblokir iframe lintas-origin)
 - Semua fitur tetap utuh: 620 produk, SEO JSON-LD, sitemap 623 URL
 - Catatan: screenshot hero kosong sesaat = animasi entrance framer-motion, bukan bug
+
+<div align="center">
+
+## ═══════════════ 📚 ERA VI — DOKUMENTASI LEGENDARIS ═══════════════
+
+### *Misi penutup: menuliskan sejarah dan peta proyek sebaik mungkin — agar generasi berikutnya tidak mulai dari nol*
+
+**Task 4 · Agent: Z.ai Code (Main Orchestrator)**
+
+</div>
+
+---
+Task ID: 4
+Agent: Z.ai Code (Main Orchestrator)
+Task: Buat worklog tersempurna & README terbaik yang pernah ada + perbaikan script `start` yang usang
+
+Work Log:
+- AUDIT FAKTA MENYELURUH sebelum menulis: hitung ulang produk PGlite langsung dari database (620 produk, 19 kategori, 7 testimoni), hitung file gambar fisik (512 kompresor + 10 kategori + 1 hero + logo), verifikasi sitemap live (623 URL via curl), petakan 8 rute aktif (/, /produk, /produk/[slug], /insights, /admin × 5 sub-halaman, /sitemap.xml, /robots.txt, /llms.txt), petakan 6 script pipeline di scripts/, petakan 21 komponen berkat + cms + ui
+- BUG DOKUMENTASI DITEMUKAN & DIPERBAIKI: package.json `start: "bunx serve out"` adalah sisa era Static Export (out/ sudah tidak dipakai sejak Era IV beralih ke PGlite dinamis) → diganti `next start -p 3000` agar README 100% jujur
+- WORKLOG DIREKONSTRUKSI ARSITEKTUR-NYA (konten historis 19 entri DIPERTAHANKAN UTUH, tidak satu kalimat pun dibuang): header epik + dasbor eksekutif 12 metrik terverifikasi + peta perjalanan 6 era ASCII + indeks master 20 seksi (tabel: #, Task ID, Era, Agent, Misi, Status) + 12 Aturan Emas (setiap aturan disandingkan dengan tragedi asalnya) + fun facts + 6 pembatas era bergaya + semua entri asli terurai kronologis
+- README DITULIS ULANG TOTAL dari kondisi usang (masih mengklaim "120 produk" & "static export" — tidak akurat lagi): sekarang mencerminkan 620 produk, 19 kategori, 25 brand, PGlite, 512 gambar, SEO arsenal 5 tipe JSON-LD, sitemap 623 URL, llms.txt, admin CMS, dwi-bahasa — bilingual ID/EN penuh, badges, quick start, tabel perintah terverifikasi, diagram arsitektur baru (client → Next.js → PGlite), peta rute, panduan deploy VPS/Vercel/cPanel yang jujur untuk arsitektur dinamis, SEO playbook 8 langkah pasca-deploy, troubleshooting 6 skenario, kredit
+- Semua angka dalam kedua dokumen diambil dari verifikasi langsung (bukan ingatan) — prinsip "documentation = verified truth"
+- Lint & dev server tetap sehat setelah perubahan package.json
+
+Stage Summary:
+- worklog.md: dari 19 entri datar menjadi arsip 6 era berarsitektur museum — dasbor eksekutif, indeks master, 12 aturan emas anti-tragedi, tanpa kehilangan satu byte sejarah
+- README.md: akurat 100% dengan kondisi proyek terkini (620 produk/PGlite/SEO total), bilingual, siap memukau reviewer GitHub & calon klien
+- package.json: script `start` kini benar untuk arsitektur dinamis (next start)
+- Prinsip tercatat untuk selamanya: "Dokumentasi terbaik adalah kebenaran yang diverifikasi, bukan harapan yang ditulis"
+
