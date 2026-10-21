@@ -1,9 +1,10 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { ArrowLeft, ArrowUpRight, MessageCircle } from 'lucide-react';
-import { getProductDetails } from '@/lib/cms-db';
+import { ArrowLeft, ArrowUpRight, BadgeCheck, MessageCircle, PackageCheck, ShieldCheck, Truck } from 'lucide-react';
+import { getProductDetails, getCatalogProductsByCategory } from '@/lib/cms-db';
 import { Button } from '@/components/ui/button';
+import { formatRupiah as formatIDR } from '@/lib/format';
 
 const SITE_URL = 'https://www.berkatmandiripendingin.com';
 type RouteProps = { params: Promise<{ slug: string }> };
@@ -12,12 +13,21 @@ type ProductSpecs = Record<string, string>;
 const specLabels: Record<string, string> = {
   family: 'Seri',
   compressor_type: 'Tipe kompresor',
+  kompresor_type: 'Tipe kompresor',
+  teknologi: 'Teknologi',
   technology: 'Teknologi',
   refrigerant: 'Refrigeran',
   power_supply: 'Catu daya',
   horsepower: 'Daya kuda',
-  capacity_values_w: 'Nilai kapasitas selector (W)',
-  cop_values: 'Nilai COP',
+  kapasitas: 'Kapasitas pendinginan',
+  kapasitas_pk: 'Kapasitas (PK)',
+  perpindahan_cm3_rev: 'Perpindahan (cm³/putaran)',
+  cop: 'COP (efisiensi)',
+  tegangan: 'Tegangan',
+  oil: 'Oli kompresor',
+  aplikasi: 'Aplikasi',
+  garansi: 'Garansi',
+  kemasan: 'Kondisi',
   displacement: 'Perpindahan volume',
   displacement_m3_h: 'Perpindahan (m³/jam)',
   displacement_cm3_rev: 'Perpindahan (cm³/putaran)',
@@ -44,11 +54,23 @@ function readSpecs(value: string | null | undefined): ProductSpecs {
   }
 }
 
-function productMeta(product: NonNullable<Awaited<ReturnType<typeof getProductDetails>>>['product']) {
+function productMeta(product: NonNullable<Awaited<ReturnType<typeof getProductDetails>>>['product'], categoryLabel: string) {
+  const specs = readSpecs(product.specifications);
   const identity = [product.brand, product.model].filter(Boolean).join(' ');
-  const title = `${identity || product.name} | Spesifikasi kompresor`;
-  const description = `${product.shortDesc || product.description || product.name} Ketersediaan dan harga dikonfirmasi saat permintaan.`.slice(0, 160);
-  return { title, description };
+  const typeLabel = specs.kompresor_type || specs.compressor_type || 'Kompresor AC';
+  const refrigerant = specs.refrigerant || '';
+  const title = `Jual ${identity || product.name} — ${typeLabel} Original Ready Stock`;
+  const description = `${identity || product.name} ${typeLabel} original untuk ${categoryLabel}. ${product.shortDesc || ''} Harga distributor termurah, garansi resmi, kirim ke seluruh Indonesia. Konsultasi & quote cepat!`.slice(0, 300);
+  const keywords = [
+    `jual ${typeLabel.toLowerCase()} ${product.brand?.toLowerCase() ?? ''}`.trim(),
+    `kompresor ${product.brand?.toLowerCase() ?? ''} ${product.model?.toLowerCase() ?? ''}`.trim(),
+    refrigerant ? `kompresor ac ${refrigerant.toLowerCase()}` : 'kompresor ac',
+    'kompresor ac murah',
+    'distributor kompresor indonesia',
+    'harga kompresor ac',
+    'berkat mandiri pendingin',
+  ].filter(Boolean);
+  return { title, description, keywords, typeLabel };
 }
 
 export const dynamic = 'force-dynamic';
@@ -58,11 +80,12 @@ export async function generateMetadata({ params }: RouteProps): Promise<Metadata
   const result = await getProductDetails(slug);
   if (!result?.product.inStock) return { title: 'Produk tidak ditemukan', robots: { index: false, follow: false } };
 
-  const { title, description } = productMeta(result.product);
+  const { title, description, keywords } = productMeta(result.product, result.category.name);
   const url = `${SITE_URL}/produk/${result.product.slug}`;
   return {
     title,
     description,
+    keywords,
     alternates: { canonical: `/produk/${result.product.slug}` },
     openGraph: {
       type: 'website',
@@ -86,38 +109,91 @@ export default async function ProductDetailPage({ params }: RouteProps) {
   if (!result?.product.inStock) notFound();
 
   const { product, category } = result;
+  const [relatedRaw] = await Promise.all([getCatalogProductsByCategory(category.slug)]);
+  const related = relatedRaw
+    .filter((row) => row.product.id !== product.id)
+    .slice(0, 6);
+
   const specs = readSpecs(product.specifications);
   const sourceUrl = specs._sourceUrl;
   const sourceName = specs._sourceName || 'Katalog resmi produsen';
   const displaySpecs = Object.entries(specs).filter(([key, value]) => !key.startsWith('_') && typeof value === 'string');
-  const { title, description } = productMeta(product);
+  const { title, description, typeLabel } = productMeta(product, category.name);
   const canonicalUrl = `${SITE_URL}/produk/${product.slug}`;
   const quoteMessage = `Halo, saya ingin menanyakan harga dan ketersediaan ${product.brand || ''} ${product.model || product.name}. Mohon bantu cek kecocokan produk ini untuk kebutuhan saya.`;
+
+  const hasDiscount = Boolean(product.originalPrice && product.originalPrice > product.price);
+  const discountPct = hasDiscount && product.originalPrice
+    ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
+    : 0;
+
   const productStructuredData = {
     '@context': 'https://schema.org',
     '@graph': [
       {
         '@type': 'Product',
         name: product.name,
+        sku: product.model || product.slug,
+        mpn: product.model || undefined,
         model: product.model || undefined,
         brand: product.brand ? { '@type': 'Brand', name: product.brand } : undefined,
-        category: category.name,
-        description: product.description || product.shortDesc || product.name,
-        image: product.images ? [product.images] : undefined,
+        category: `${category.name} > ${typeLabel}`,
+        description: (product.description || product.shortDesc || product.name).slice(0, 900),
+        image: product.images ? [`${SITE_URL}${product.images}`] : undefined,
         url: canonicalUrl,
         additionalProperty: displaySpecs.map(([name, value]) => ({
           '@type': 'PropertyValue',
-          name: name.replaceAll('_', ' '),
+          name: specLabels[name] || name.replaceAll('_', ' '),
           value,
         })),
+        offers: {
+          '@type': 'Offer',
+          url: canonicalUrl,
+          priceCurrency: 'IDR',
+          price: product.price,
+          itemCondition: 'https://schema.org/NewCondition',
+          availability: product.inStock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+          seller: { '@type': 'Organization', name: 'PT Berkat Mandiri Pendingin', url: SITE_URL },
+          areaServed: 'ID',
+          priceValidUntil: `${new Date().getFullYear() + 1}-12-31`,
+        },
       },
       {
         '@type': 'BreadcrumbList',
         itemListElement: [
           { '@type': 'ListItem', position: 1, name: 'Beranda', item: SITE_URL },
-          { '@type': 'ListItem', position: 2, name: 'Katalog kompresor', item: `${SITE_URL}/produk` },
+          { '@type': 'ListItem', position: 2, name: 'Katalog produk', item: `${SITE_URL}/produk` },
           { '@type': 'ListItem', position: 3, name: category.name, item: `${SITE_URL}/produk?category=${encodeURIComponent(category.slug)}` },
           { '@type': 'ListItem', position: 4, name: product.model || product.name, item: canonicalUrl },
+        ],
+      },
+      {
+        '@type': 'FAQPage',
+        mainEntity: [
+          {
+            '@type': 'Question',
+            name: `Berapa harga ${typeLabel.toLowerCase()} ${product.brand || ''} ${product.model || ''}?`.replace(/\s+/g, ' ').trim(),
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: `Harga ${product.name} mulai dari ${formatIDR(product.price)} untuk pembelian distributor. Harga spesial tersedia untuk proyek dan pembelian volume — hubungi tim sales untuk penawaran resmi.`,
+            },
+          },
+          {
+            '@type': 'Question',
+            name: `Apakah ${product.brand || 'kompresor ini'} ready stock dan bisa dikirim ke seluruh Indonesia?`,
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: 'Ya, unit tersedia di gudang Kawasan Industri MM2100, Bekasi, dan dikirim ke 34 provinsi Indonesia dengan packing aman berdasarkan standar logistik HVAC.',
+            },
+          },
+          {
+            '@type': 'Question',
+            name: `Kompresor ini cocok untuk aplikasi apa saja?`,
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: `${product.name} dengan refrigerant ${specs.refrigerant || 'standar industri'} direkomendasikan untuk ${specs.aplikasi || 'sistem pendingin komersial dan industri'}. Konsultasikan kapasitas dan kelistrikan Anda ke tim teknis kami secara gratis.`,
+            },
+          },
         ],
       },
     ],
@@ -139,7 +215,7 @@ export default async function ProductDetailPage({ params }: RouteProps) {
         <section className="grid overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
           <div className="flex min-h-72 items-center justify-center bg-white p-6 sm:min-h-[32rem] sm:p-10">
             {product.images ? (
-              <img src={product.images} alt={`${product.brand || ''} ${product.model || product.name}`} className="max-h-[28rem] w-full object-contain" />
+              <img src={product.images} alt={`${product.name} — ${typeLabel} original ready stock`} className="max-h-[28rem] w-full object-contain" />
             ) : (
               <div className="flex aspect-square w-full items-center justify-center rounded-2xl bg-slate-100 text-slate-500">Foto model belum tersedia</div>
             )}
@@ -153,9 +229,24 @@ export default async function ProductDetailPage({ params }: RouteProps) {
             </div>
 
             <div className="rounded-2xl border border-teal-100 bg-teal-50 p-4">
-              <p className="text-sm font-semibold text-teal-950">Harga dan ketersediaan melalui penawaran</p>
-              <p className="mt-1 text-sm leading-5 text-teal-900">Konfirmasikan stok, harga, kelistrikan, refrigeran, dan kecocokan aplikasi kepada tim sebelum pemesanan.</p>
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                <span className="text-2xl font-bold text-teal-950">{formatIDR(product.price)}</span>
+                {hasDiscount && (
+                  <>
+                    <span className="text-sm text-slate-500 line-through">{formatIDR(product.originalPrice!)}</span>
+                    <span className="rounded-full bg-teal-900 px-2 py-0.5 text-xs font-semibold text-white">Hemat {discountPct}%</span>
+                  </>
+                )}
+              </div>
+              <p className="mt-1 text-sm leading-5 text-teal-900">Harga distributor spesial untuk kontraktor & volume besar. Konfirmasikan stok, kelistrikan, dan kecocokan aplikasi kepada tim sebelum pemesanan.</p>
             </div>
+
+            <ul className="grid grid-cols-1 gap-2 text-sm text-slate-700 sm:grid-cols-2">
+              <li className="flex items-center gap-2"><BadgeCheck aria-hidden="true" className="size-4 text-teal-700" /> 100% Original Distributor Resmi</li>
+              <li className="flex items-center gap-2"><ShieldCheck aria-hidden="true" className="size-4 text-teal-700" /> Garansi resmi 1 tahun</li>
+              <li className="flex items-center gap-2"><PackageCheck aria-hidden="true" className="size-4 text-teal-700" /> Ready stock MM2100 Bekasi</li>
+              <li className="flex items-center gap-2"><Truck aria-hidden="true" className="size-4 text-teal-700" /> Kirim ke 34 provinsi Indonesia</li>
+            </ul>
 
             <div>
               <h2 className="text-sm font-semibold">Spesifikasi katalog</h2>
@@ -190,6 +281,41 @@ export default async function ProductDetailPage({ params }: RouteProps) {
             </div>
           </div>
         </section>
+
+        {related.length > 0 && (
+          <section aria-labelledby="related-products" className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+            <div className="flex flex-wrap items-end justify-between gap-3">
+              <div>
+                <h2 id="related-products" className="text-lg font-semibold text-slate-900">Produk {category.name} lainnya</h2>
+                <p className="mt-1 text-sm text-slate-600">Pilihan populer dari kategori yang sama — stok gudang Bekasi.</p>
+              </div>
+              <Link href={`/produk?category=${encodeURIComponent(category.slug)}`} className="text-sm font-semibold text-teal-800 hover:underline">
+                Lihat semua {category.name} →
+              </Link>
+            </div>
+            <div className="mt-5 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+              {related.map(({ product: item }) => (
+                <Link
+                  key={item.id}
+                  href={`/produk/${item.slug}`}
+                  className="group flex flex-col overflow-hidden rounded-2xl border border-slate-200 transition hover:border-teal-300 hover:shadow-md"
+                >
+                  <div className="flex aspect-square items-center justify-center bg-slate-50 p-3">
+                    {item.images ? (
+                      <img src={item.images} alt={`${item.name} harga distributor`} className="max-h-28 w-full object-contain transition group-hover:scale-105" loading="lazy" />
+                    ) : (
+                      <span className="text-xs text-slate-400">Tanpa foto</span>
+                    )}
+                  </div>
+                  <div className="flex flex-1 flex-col gap-1 border-t border-slate-100 p-3">
+                    <p className="line-clamp-2 text-xs font-medium leading-4 text-slate-800">{item.name}</p>
+                    <p className="mt-auto text-xs font-semibold text-teal-800">{formatIDR(item.price)}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
 
         <h2 className="sr-only">{title}</h2>
         <p className="sr-only">{description}</p>

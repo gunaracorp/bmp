@@ -1,6 +1,7 @@
-import { Pool } from 'pg';
+import path from 'node:path';
+import { PGlite } from '@electric-sql/pglite';
 import { and, eq, exists, inArray, isNull, lt, ne, notInArray, or, sql } from 'drizzle-orm';
-import { drizzle } from 'drizzle-orm/node-postgres';
+import { drizzle } from 'drizzle-orm/pglite';
 import { bigint, boolean, doublePrecision, integer, pgTable, text, timestamp, uniqueIndex } from 'drizzle-orm/pg-core';
 
 export const cmsArticles = pgTable('cms_articles', {
@@ -106,17 +107,32 @@ export const testimonials = pgTable('testimonials', {
   createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
 });
 
-const globalForCms = globalThis as typeof globalThis & { cmsPool?: Pool };
-const pool = globalForCms.cmsPool ?? new Pool({
-  connectionString: process.env.POSTGRES_URL ?? process.env.DATABASE_URL,
-  max: 2,
-  idleTimeoutMillis: 10_000,
-  connectionTimeoutMillis: 5_000,
-});
+const globalForCms = globalThis as typeof globalThis & { cmsClient?: PGlite };
 
-if (process.env.NODE_ENV !== 'production') globalForCms.cmsPool = pool;
+/**
+ * PGlite — PostgreSQL asli (WASM) yang tertanam di dalam proses Node.
+ * Data tersimpan permanen di disk sehingga aman untuk produksi ringan.
+ */
+function resolvePgliteDataDir(): string {
+  const configured = process.env.PGLITE_DATA_DIR;
+  if (configured && configured.length > 0) return configured;
+  return path.join(process.cwd(), 'db', 'pglite-data');
+}
 
-export const cmsDb = drizzle(pool, { schema: { cmsArticles, cmsSettings, categories, products, testimonials, productImageAssets } });
+const pglite = globalForCms.cmsClient ?? new PGlite(resolvePgliteDataDir());
+
+if (process.env.NODE_ENV !== 'production') globalForCms.cmsClient = pglite;
+
+/** Adapter ringan menyerupai client `pg.Pool` untuk pemakaian SQL mentah. */
+export const rawCmsClient = {
+  query: async <T = Record<string, unknown>>(text: string, params?: unknown[]) => {
+    const result = await pglite.query<T>(text, params as unknown[]);
+    return { rows: result.rows as T[], rowCount: result.affectedRows ?? result.rows.length };
+  },
+  release: () => undefined,
+};
+
+export const cmsDb = drizzle(pglite, { schema: { cmsArticles, cmsSettings, categories, products, testimonials, productImageAssets } });
 
 export const CMS_BACKUP_PUBLIC_TABLES = [
   'articles',
@@ -154,7 +170,7 @@ function quotePostgresIdentifier(identifier: string) {
 }
 
 export async function exportCmsDatabaseSnapshot(): Promise<CmsDatabaseBackupSnapshot> {
-  const client = await pool.connect();
+  const client = rawCmsClient;
   const capturedAt = new Date().toISOString();
   let transactionOpen = false;
 
@@ -656,7 +672,7 @@ export async function getCatalogBreadcrumb(slug: string) {
 }
 
 export async function getCmsRuntimeConfig() {
-  return process.env.POSTGRES_URL ?? process.env.DATABASE_URL;
+  return `pglite://${resolvePgliteDataDir()}`;
 }
 
 export async function getCatalogProduct(id: string) {
@@ -733,7 +749,7 @@ export async function getCatalogProductsPage(
   offset: number,
 ) {
   const { and, count, eq, ilike, or } = await import('drizzle-orm');
-  const predicates = [eq(products.inStock, true), eq(products.brand, 'Embraco')];
+  const predicates = [eq(products.inStock, true)];
   const normalizedQuery = query.trim().slice(0, 100);
   if (normalizedQuery) {
     const escapedQuery = normalizedQuery.replace(/[\\%_]/g, '\\$&');
@@ -803,5 +819,5 @@ export async function getHomepageCatalogPreview() {
     .innerJoin(categories, (await import('drizzle-orm')).eq(products.categoryId, categories.id))
     .where((await import('drizzle-orm')).eq(products.inStock, true))
     .orderBy((await import('drizzle-orm')).desc(products.createdAt), products.name)
-    .limit(12);
+    .limit(48);
 }

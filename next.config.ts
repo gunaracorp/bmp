@@ -4,6 +4,7 @@ const nextConfig: NextConfig = {
   images: {
     unoptimized: true,
   },
+  serverExternalPackages: ['@electric-sql/pglite'],
   typescript: {
     ignoreBuildErrors: true,
   },

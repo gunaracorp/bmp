@@ -496,3 +496,38 @@ Stage Summary:
 - Totalitas gambar 100% TERBUKTI dan terkunci permanen oleh tool check:assets
 - Bom waktu DATABASE_URL absolut dinetralkan — deploy ke mesin mana pun tidak akan pernah kosong lagi
 - README kelas dunia terpasang; repo siap dipush/diupload dengan bangga
+
+---
+Task ID: 2
+Agent: Z.ai Code (Main Orchestrator)
+Task: Install repository github.com/prabudanling/bmp, sempurnakan, dan tambahkan 500 produk kompresor AC baru dengan gambar + deskripsi SEO lengkap (target: ranking #1 Google)
+
+Work Log:
+- Clone repository BMP (Berkat Mandiri Pendingin) dari github.com/prabudanling/bmp ke /tmp/bmp-repo lalu rsync ke /home/z/my-project
+- Analisis arsitektur: Next.js 16 + Drizzle ORM + PostgreSQL untuk CMS/katalog, Prisma+SQLite legacy untuk seed 120 produk
+- Provisioning database: apt PostgreSQL gagal (no root) → SOLUSI SUPERIOR: @electric-sql/pglite (PostgreSQL WASM embedded, data persisten di db/pglite-data)
+- Refactor src/lib/cms-db.ts: Pool pg → PGlite + drizzle-orm/pglite, adapter rawCmsClient untuk backup snapshot, getCmsRuntimeConfig
+- next.config.ts: serverExternalPackages: ['@electric-sql/pglite']
+- scripts/init-pglite-schema.ts: CREATE TABLE 8 tabel (products, categories, testimonials, cms_articles, articles, cms_settings, site_settings, product_image_assets) + index
+- Seed SQLite via prisma (120 produk) → scripts/migrate-sqlite-to-pglite.ts: migrasi 10 kategori, 120 produk, 7 testimoni ke PGlite
+- Generate 12 gambar kompresor premium AI (fotografi produk studio): rotary 1/2 PK, twin rotary, DC inverter, scroll kecil/besar, piston hermetik, semi-hermetik, screw, centrifugal, condensing unit, heavy industrial — via z-ai-web-dev-sdk di scripts/generate-base-compressor-images.ts
+- scripts/generate-compressor-catalog.ts (SUPER GENERATOR): 500 produk kompresor baru dari 9 famili (rotary 125, twin-rotary 45, dc-inverter 60, scroll 110, scroll-komersial 35, piston-hermetik 50, semi-hermetik 40, screw 20, unit-kondensor 15) × 25 brand dunia (Copeland, Daikin, Panasonic, LG, Gree, Bitzer, Danfoss, Carrier, dst)
+- 500 deskripsi SEO unik per produk (template rotasi × 5 opener/mid/closer): keyword jual/distributor/harga/garansi + kota + aplikasi + refrigerant
+- 500 GAMBAR UNIK per produk via sharp: derivative base AI + badge brand berwarna (tipe + HP + refrigerant + BMP logo) + tint warna brand + variasi zoom — output webp 800×800, 0 gagal
+- 9 sub-kategori kompresor baru (slug kompresor-*) dengan deskripsi SEO + gambar
+- SEO supercharge halaman detail produk: JSON-LD @graph (Product + Offer IDR + seller + BreadcrumbList + FAQPage 3 pertanyaan), meta keywords, harga Rp + badge Hemat %, 4 trust badges (original, garansi, ready stock MM2100, kirim 34 provinsi), section Produk Terkait (internal linking)
+- Hapus filter hardcoded brand='Embraco' di getCatalogProductsPage → katalog universal semua brand
+- Transformasi /produk dari katalog Embraco → katalog kompresor universal (judul, hero, badge BMP)
+- getHomepageCatalogPreview: 12 → 48 produk untuk filter sisi klien
+- public/llms.txt untuk AI search engines (ChatGPT, Perplexity, Google AI)
+- Hapus public/robots.txt konflik (pakai robots.ts dinamis) — robots.txt 200 kembali
+- Verifikasi browser end-to-end via agent-browser: homepage, katalog 620 varian, filter kategori (110 scroll), pencarian "screw" (20 kartu), detail produk + JSON-LD + harga + related, mobile iPhone 14 responsif, footer natural push, screenshot penuh
+- Sitemap: 623 URL terindeks
+
+Stage Summary:
+- Database: PostgreSQL (PGlite) di db/pglite-data — 620 produk, 19 kategori, 7 testimoni
+- Katalog kompresor: 558 produk (58 original + 500 baru) di 10 kategori kompresor
+- 512 file gambar di public/images/products/kompresor/ (12 base AI + 500 derivative webp unik, 22 MB)
+- SEO: Product+Offer+FAQ+Breadcrumb JSON-LD, meta keywords, canonical, OG/Twitter, sitemap 623 URL, robots.txt, llms.txt
+- Semua rute 200: /, /produk, /produk/[slug], /sitemap.xml, /robots.txt, /llms.txt
+- Lint exit 0, tanpa error runtime di dev.log

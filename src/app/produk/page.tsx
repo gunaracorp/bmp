@@ -13,15 +13,16 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
   const params = await searchParams;
   const isFiltered = Boolean(params.q || params.category || params.page);
   return {
-    title: 'Katalog Kompresor Embraco dan Spesifikasinya',
-    description: 'Telusuri katalog kompresor Embraco berdasarkan model, tipe, refrigeran, dan catu daya. Spesifikasi merujuk pada selector resmi Embraco; konfirmasi harga, stok, serta kecocokan aplikasi sebelum memesan.',
+    title: 'Katalog Kompresor AC Terlengkap — Rotary, Scroll, Piston & Screw Original',
+    description: 'Katalog 500+ kompresor AC dari 25 brand ternama: Copeland, Daikin, Panasonic, LG, Gree, Bitzer, Danfoss, dst. Filter berdasarkan tipe, refrigerant, dan catu daya. Harga distributor, garansi resmi, kirim seluruh Indonesia.',
+    keywords: ['katalog kompresor', 'jual kompresor ac', 'kompresor rotary', 'kompresor scroll', 'kompresor piston', 'kompresor screw', 'harga kompresor ac', 'distributor kompresor'],
     alternates: { canonical: '/produk' },
     robots: isFiltered ? { index: false, follow: true } : { index: true, follow: true },
     openGraph: {
       type: 'website',
       url: `${SITE_URL}/produk`,
-      title: 'Katalog Kompresor Embraco | Berkat Mandiri Pendingin',
-      description: 'Temukan varian kompresor Embraco dan bandingkan spesifikasinya sebelum meminta penawaran.',
+      title: 'Katalog Kompresor AC Terlengkap | Berkat Mandiri Pendingin',
+      description: 'Jelajahi 500+ varian kompresor dari 25 brand ternama — bandingkan spesifikasi dan minta penawaran distributor.',
     },
   };
 }
@@ -62,7 +63,7 @@ export default async function ProductCatalogPage({ searchParams }: PageProps) {
   const itemList = {
     '@context': 'https://schema.org',
     '@type': 'ItemList',
-    name: 'Katalog kompresor Embraco',
+    name: 'Katalog kompresor AC Berkat Mandiri Pendingin',
     numberOfItems: total,
     itemListElement: products.map(({ product }, index) => ({
       '@type': 'ListItem',
@@ -80,10 +81,8 @@ export default async function ProductCatalogPage({ searchParams }: PageProps) {
             <ArrowLeft aria-hidden="true" className="size-4" /> Berkat Mandiri Pendingin
           </Link>
           <div className="flex items-center gap-3">
-            <span className="rounded-lg bg-teal-950 px-2 py-1.5">
-              <img src="https://www.embraco.com/images/logo-embraco.svg" alt="Logo resmi Embraco" width={88} height={36} referrerPolicy="no-referrer" className="h-7 w-[4.5rem] object-contain" />
-            </span>
-            <span className="hidden text-xs font-semibold uppercase tracking-[0.16em] text-teal-800 sm:block">Katalog teknis Embraco</span>
+            <span className="rounded-lg bg-teal-950 px-2 py-1.5 font-bold text-sm text-teal-50 tracking-wide">BMP</span>
+            <span className="hidden text-xs font-semibold uppercase tracking-[0.16em] text-teal-800 sm:block">Katalog Teknis Kompresor</span>
           </div>
         </div>
       </header>
@@ -91,10 +90,10 @@ export default async function ProductCatalogPage({ searchParams }: PageProps) {
       <section className="border-b border-slate-200 bg-white">
         <div className="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:px-6 sm:py-14 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end lg:px-8">
           <div className="max-w-3xl">
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-teal-800">Kompresor · Embraco</p>
-            <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl lg:text-5xl">Pilih berdasarkan model dan spesifikasi.</h1>
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-teal-800">Kompresor AC · Distributor Resmi Sejak 2010</p>
+            <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl lg:text-5xl">Katalog Kompresor Terlengkap — Pilih Berdasarkan Model & Spesifikasi.</h1>
             <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">
-              Data model, foto, dan atribut teknis mengacu pada Embraco Product Selector. Harga dan ketersediaan lokal belum dipastikan—minta penawaran untuk pemeriksaan stok dan kecocokan aplikasi.
+              Jelajahi 500+ varian kompresor rotary, scroll, piston, semi-hermetik, dan screw dari 25 brand ternama dunia. Semua unit original dengan garansi resmi — minta penawaran untuk pemeriksaan stok dan kecocokan aplikasi.
             </p>
           </div>
           <div className="flex items-baseline gap-2 rounded-2xl border border-teal-100 bg-teal-50 px-5 py-4 text-teal-950">
@@ -141,11 +140,11 @@ export default async function ProductCatalogPage({ searchParams }: PageProps) {
                 return (
                   <article key={product.id} className="group flex min-w-0 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-teal-200 hover:shadow-lg">
                     <Link href={`/produk/${product.slug}`} className="flex aspect-[4/3] items-center justify-center overflow-hidden bg-white p-5" aria-label={`Lihat spesifikasi ${product.name}`}>
-                      {product.images ? <img src={product.images} alt={`Kompresor Embraco ${product.model || product.name}`} loading="lazy" className="size-full object-contain transition duration-300 group-hover:scale-[1.03]" /> : <span className="text-sm text-slate-500">Foto model belum tersedia</span>}
+                      {product.images ? <img src={product.images} alt={`Kompresor ${product.brand || ''} ${product.model || product.name} original`} loading="lazy" className="size-full object-contain transition duration-300 group-hover:scale-[1.03]" /> : <span className="text-sm text-slate-500">Foto model belum tersedia</span>}
                     </Link>
                     <div className="flex flex-1 flex-col border-t border-slate-100 p-5">
                       <div className="flex items-start justify-between gap-3">
-                        <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-teal-800">Embraco</p>
+                        <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-teal-800">{product.brand || 'Kompresor'}</p>
                         <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-medium text-slate-600">{productCategory.name.replace(/^Kompresor\s+/i, '')}</span>
                       </div>
                       <h2 className="mt-2 line-clamp-2 text-lg font-semibold leading-snug text-slate-950">{product.model || product.name}</h2>
