@@ -531,3 +531,22 @@ Stage Summary:
 - SEO: Product+Offer+FAQ+Breadcrumb JSON-LD, meta keywords, canonical, OG/Twitter, sitemap 623 URL, robots.txt, llms.txt
 - Semua rute 200: /, /produk, /produk/[slug], /sitemap.xml, /robots.txt, /llms.txt
 - Lint exit 0, tanpa error runtime di dev.log
+
+---
+Task ID: 3
+Agent: Z.ai Code (Main Orchestrator)
+Task: Perbaiki error "preview-chat-*.space-z.ai refused to connect" pada Preview Panel
+
+Work Log:
+- Diagnosis: server Next.js hidup (200 di semua rute), gateway Caddy port 81 juga merespons normal
+- ROOT CAUSE DITEMUKAN: next.config.ts menyetel header X-Frame-Options: SAMEORIGIN → browser memblokir rendering situs di dalam iframe Preview Panel (origin preview-*.space-z.ai ≠ origin situs) → "refused to connect"
+- FIX next.config.ts: hapus X-Frame-Options: SAMEORIGIN; CSP frame-ancestors 'self' → 'frame-ancestors *' (CSP masih Report-Only jadi tidak memblokir keras); tambah komentar penjelasan anti-regresi
+- Restart dev server (rm -rf .next + bun run dev) karena perubahan next.config.ts tidak di-hot-reload
+- Verifikasi header baru: X-Frame-Options HILANG, frame-ancestors * aktif
+- Verifikasi ulang semua rute: /, /produk, /sitemap.xml, /robots.txt, /llms.txt, /insights → semua 200
+- Verifikasi browser end-to-end: homepage render penuh (hero, badge, gambar), tanpa error page
+
+Stage Summary:
+- Preview Panel kini dapat memuat situs (X-Frame-Options tidak lagi memblokir iframe lintas-origin)
+- Semua fitur tetap utuh: 620 produk, SEO JSON-LD, sitemap 623 URL
+- Catatan: screenshot hero kosong sesaat = animasi entrance framer-motion, bukan bug
