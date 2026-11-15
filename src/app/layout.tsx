@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import { Toaster } from 'sonner';
+import { CS_CONTACTS } from '@/lib/cs-contacts';
 
 const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin'] });
 const geistMono = Geist_Mono({ variable: '--font-geist-mono', subsets: ['latin'] });
@@ -60,6 +61,23 @@ export default function RootLayout({
         description: 'Distributor HVAC resmi sejak 2010 — pusat AC, kompresor, refrigerant, spare part, chiller, dan sistem pendingin gedung terlengkap di Indonesia.',
         foundingDate: '2010',
         telephone: '+62-813-5000-3423',
+        contactPoint: [
+          {
+            '@type': 'ContactPoint',
+            telephone: '+62-813-5000-3423',
+            contactType: 'sales',
+            areaServed: 'ID',
+            availableLanguage: ['id'],
+          },
+          ...CS_CONTACTS.map((cs) => ({
+            '@type': 'ContactPoint',
+            telephone: cs.waDisplay.replace(' ', '-'),
+            contactType: 'customer support',
+            name: cs.name,
+            areaServed: 'ID',
+            availableLanguage: ['id'],
+          })),
+        ],
         address: {
           '@type': 'PostalAddress',
           addressLocality: 'Bekasi',

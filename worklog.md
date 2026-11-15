@@ -854,3 +854,21 @@ Stage Summary:
 - Sitemap 678 URL dengan 41 halaman artikel; FAQPage JSON-LD otomatis di tiap artikel; struktur topik ber-ancor memperkuat hub-and-spoke SEO
 - Pipeline konten kini satu pintu: tambah objek di group-*.ts → blog + seksi + sitemap + admin otomatis
 - dev-guard makin kedap: 3 sinyal korupsi (panic file, dev.log, pid basi) dibersihkan otomatis saat boot
+
+---
+
+Task ID: 11
+Agent: Z.ai (GLM) — Main Orchestrator
+Task: Permintaan owner — tambahkan 2 kontak Customer Service resmi BMP di situs (Tn. Acep Sihabudin, WA +6281220030092 & Tn. H. Gugun Gunara, S.E., M.M, WA +6281316516524), tutup sisa to-do Task 10 (artikel kategori + edukasi), lalu push ke GitHub untuk deploy owner
+
+Work Log:
+- AUDIT TO-DO: seluruh pekerjaan artikel Task 10 (9 artikel kategori + 7 edukasi, total 41 artikel) ternyata sudah lengkap dan sudah ter-push (origin/main = ad1cdff, lokal-remote sinkron 0/0); sisa pekerjaan baru = kontak CS
+- SINGLE SOURCE OF TRUTH: src/lib/cs-contacts.ts (baru) — tipe CsContact + CS_CONTACTS (2 entri: nama bergelar, peran, waNumber, waDisplay, pesan pembuka) + csWaUrl() yang membangun link wa.me dengan pesan terformat; mengganti/edit CS kini cukup di satu file
+- DISEBAR KE 5 TITIK: (1) ContactSection #kontak — blok baru "Tim Customer Service" (ikon Headphones) dengan 2 kartu emerald: nama, peran, nomor tampilan, link wa.me pesan terformat; (2) Footer kolom perusahaan — 2 link WA CS menggantikan baris nama tunggal, sekaligus koreksi nama "Encep Sihabudin" → "Acep Sihabudin" sesuai data owner (nomor 0812-2003-0092 yang lama di kartu telepon memang milik beliau); (3) InfoPages "Hubungi Kami" — 2 baris CS dengan ikon MessageCircle; (4) JSON-LD layout.tsx HVACBusiness — contactPoint kini array: 1 sales + 2 customer support dengan name per orang; (5) JSON-LD page.tsx Organization — contactPoint array identik
+- VERIFIKASI SATU SESI (server live via scripts/verify-task10.sh): lint exit 0; homepage memuat "Acep Sihabudin" 6x, "Gugun Gunara" 6x, kedua nomor wa.me, heading "Tim Customer Service"; JSON-LD berisi 4 entri contactType customer support lengkap dengan nama; sitemap.xml 678 URL dengan 41 URL /insights/*; SELURUH 41 artikel /insights HTTP 200 (0 gagal); FAQPage JSON-LD aktif di artikel edukasi; nol kebocoran "Rp <angka>" di /, /insights, /produk; link wa.me kedua CS terbentuk benar (2+2 kemunculan)
+- PUSH: commit + push langsung memakai URL ber-token dari env var proses (tanpa menyentuh .git/config; token tidak pernah tertulis di file mana pun di repo)
+
+Stage Summary:
+- Situs kini menampilkan 2 kontak CS resmi di section kontak, footer seluruh halaman (termasuk 41 halaman artikel blog), halaman info "Hubungi Kami", dan structured data schema.org — Google dapat membaca contactPoint customer support per orang untuk rich results
+- To-do Task 10 ditutup tuntas dengan bukti: 41 artikel (25 merek + 9 tipe + 7 edukasi) semua 200, sitemap 678 URL, nol harga
+- Kontak CS terpusat satu file — penambahan CS berikutnya hanya edit src/lib/cs-contacts.ts, otomatis sebar ke semua titik

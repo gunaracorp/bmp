@@ -15,9 +15,11 @@ import {
   MessageCircle,
   ArrowUpRight,
   CheckCircle2,
+  Headphones,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useT, type DictKey } from '@/lib/i18n';
+import { CS_CONTACTS, csWaUrl } from '@/lib/cs-contacts';
 
 const WA_NUMBER = '6281350003423';
 
@@ -220,6 +222,39 @@ export function ContactSection() {
                 )}
               </motion.div>
             ))}
+
+            {/* Tim Customer Service */}
+            <motion.div variants={cardVariants} className="pt-2">
+              <p className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2 flex items-center gap-1.5">
+                <Headphones className="h-3.5 w-3.5 text-emerald-600" />
+                Tim Customer Service
+              </p>
+              <div className="space-y-3">
+                {CS_CONTACTS.map((cs) => (
+                  <a key={cs.waNumber} href={csWaUrl(cs)} target="_blank" rel="noopener noreferrer" className="block">
+                    <Card className="border-emerald-200 bg-emerald-50/60 hover:border-emerald-400 hover:shadow-lg transition-all duration-300 cursor-pointer group">
+                      <CardContent className="p-4 flex items-start gap-3">
+                        <div className="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center shrink-0">
+                          <MessageCircle className="h-5 w-5 text-emerald-700" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[10px] text-emerald-700 font-semibold uppercase tracking-wider">
+                            {cs.role}
+                          </p>
+                          <p className="text-sm font-semibold text-gray-900 mt-0.5 group-hover:text-emerald-700 transition-colors">
+                            {cs.name}
+                          </p>
+                          <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
+                            WhatsApp {cs.waDisplay}
+                            <ArrowUpRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                          </p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </a>
+                ))}
+              </div>
+            </motion.div>
           </motion.div>
 
           {/* Contact Form */}

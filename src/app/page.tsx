@@ -7,6 +7,7 @@ import {
   getPublicFeaturedProducts,
   getSiteSeoSettings,
 } from '@/lib/cms-db';
+import { CS_CONTACTS } from '@/lib/cs-contacts';
 
 const SITE_URL = 'https://www.berkatmandiripendingin.com';
 
@@ -55,13 +56,23 @@ const jsonLd = {
         addressRegion: 'Jawa Barat',
         addressCountry: 'ID',
       },
-      contactPoint: {
-        '@type': 'ContactPoint',
-        telephone: '+62-813-5000-3423',
-        contactType: 'sales',
-        areaServed: 'ID',
-        availableLanguage: ['id'],
-      },
+      contactPoint: [
+        {
+          '@type': 'ContactPoint',
+          telephone: '+62-813-5000-3423',
+          contactType: 'sales',
+          areaServed: 'ID',
+          availableLanguage: ['id'],
+        },
+        ...CS_CONTACTS.map((cs) => ({
+          '@type': 'ContactPoint',
+          telephone: cs.waDisplay.replace(' ', '-'),
+          contactType: 'customer support',
+          name: cs.name,
+          areaServed: 'ID',
+          availableLanguage: ['id'],
+        })),
+      ],
       areaServed: { '@type': 'Country', name: 'Indonesia' },
     },
     {

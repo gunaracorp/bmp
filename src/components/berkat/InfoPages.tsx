@@ -19,10 +19,12 @@ import {
   Phone,
   Mail,
   MapPin,
+  MessageCircle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLangStore } from '@/stores/lang-store';
 import { pick, type Entry } from '@/lib/i18n';
+import { CS_CONTACTS, csWaUrl } from '@/lib/cs-contacts';
 
 /* ────────────────────────────── Router ────────────────────────────── */
 
@@ -213,6 +215,11 @@ function AboutPage({ lang }: { lang: 'id' | 'en' }) {
           <a href="https://wa.me/6281350003423" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-teal-700 hover:text-teal-800 font-medium">
             <Phone className="h-4 w-4" /> WhatsApp +62 813-5000-3423
           </a>
+          {CS_CONTACTS.map((cs) => (
+            <a key={cs.waNumber} href={csWaUrl(cs)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-teal-700 hover:text-teal-800 font-medium">
+              <MessageCircle className="h-4 w-4" /> CS {cs.name} — WhatsApp {cs.waDisplay}
+            </a>
+          ))}
           <a href="mailto:berkatmandiripendingin@gmail.com" className="flex items-center gap-3 text-teal-700 hover:text-teal-800 font-medium break-all">
             <Mail className="h-4 w-4" /> berkatmandiripendingin@gmail.com
           </a>

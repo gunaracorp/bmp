@@ -2,11 +2,12 @@
 
 import { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
-import { Snowflake, Phone, Mail, MapPin, ArrowUp } from 'lucide-react';
+import { Snowflake, Phone, Mail, MapPin, ArrowUp, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { useT, type Entry } from '@/lib/i18n';
 import { useLangStore } from '@/stores/lang-store';
+import { CS_CONTACTS, csWaUrl } from '@/lib/cs-contacts';
 
 const quickLinks = [
   { labelKey: 'nav.home', href: '#beranda' },
@@ -160,10 +161,14 @@ export function Footer() {
               {t('footer.desc')}
             </p>
             <div className="space-y-2 text-xs">
-              <div className="flex items-center gap-2 text-gray-400">
-                <svg className="h-3.5 w-3.5 text-teal-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-                <span>Encep Sihabudin</span>
-              </div>
+              <a href={csWaUrl(CS_CONTACTS[0])} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors">
+                <MessageCircle className="h-3.5 w-3.5 text-teal-400 shrink-0" />
+                <span>Acep Sihabudin · WA {CS_CONTACTS[0].waDisplay}</span>
+              </a>
+              <a href={csWaUrl(CS_CONTACTS[1])} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors">
+                <MessageCircle className="h-3.5 w-3.5 text-teal-400 shrink-0" />
+                <span>H. Gugun Gunara, S.E., M.M · WA {CS_CONTACTS[1].waDisplay}</span>
+              </a>
               <a href="tel:02122682617" className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors">
                 <Phone className="h-3.5 w-3.5 text-teal-400 shrink-0" />
                 <span>(021) 2268-2617</span>
