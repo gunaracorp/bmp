@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ArrowLeft, ArrowUpRight, BadgeCheck, MessageCircle, PackageCheck, ShieldCheck, Truck } from 'lucide-react';
@@ -68,15 +69,20 @@ function productMeta(product: NonNullable<Awaited<ReturnType<typeof getProductDe
   const identity = [product.brand, product.model].filter(Boolean).join(' ');
   const typeLabel = specs.kompresor_type || specs.compressor_type || 'Kompresor AC';
   const refrigerant = specs.refrigerant || '';
-  const title = `Jual ${identity || product.name} — ${typeLabel} Original Ready Stock`;
-  const description = `${identity || product.name} ${typeLabel} original untuk ${categoryLabel}. ${product.shortDesc || ''} Harga distributor termurah, garansi resmi, kirim ke seluruh Indonesia. Konsultasi & quote cepat!`.slice(0, 300);
+  const horsepower = specs.horsepower || '';
+  const title = `Jual ${identity || product.name}${refrigerant ? ` ${refrigerant}` : ''} — ${typeLabel} Original`.replace(/\s+/g, ' ').trim();
+  const description = [
+    `${identity || product.name} ${typeLabel.toLowerCase()} original${refrigerant ? ` untuk refrigerant ${refrigerant}` : ''}${horsepower ? ` kapasitas ${horsepower} HP` : ''}, ready stock gudang MM2100 Bekasi.`,
+    product.shortDesc ? `${product.shortDesc.slice(0, 140)}` : `Unit ${categoryLabel.toLowerCase()} dari distributor resmi.`,
+    'Harga distributor via WhatsApp, garansi resmi, kirim ke 34 provinsi Indonesia.',
+  ].join(' ').slice(0, 300);
   const keywords = [
     `jual ${typeLabel.toLowerCase()} ${product.brand?.toLowerCase() ?? ''}`.trim(),
     `kompresor ${product.brand?.toLowerCase() ?? ''} ${product.model?.toLowerCase() ?? ''}`.trim(),
     refrigerant ? `kompresor ac ${refrigerant.toLowerCase()}` : 'kompresor ac',
-    'kompresor ac murah',
+    horsepower ? `kompresor ${horsepower} hp ${product.brand?.toLowerCase() ?? ''}`.trim() : 'kompresor ac murah',
+    `harga ${typeLabel.toLowerCase()} ${product.brand?.toLowerCase() ?? ''}`.trim(),
     'distributor kompresor indonesia',
-    'harga kompresor ac',
     'berkat mandiri pendingin',
   ].filter(Boolean);
   return { title, description, keywords, typeLabel };
@@ -185,7 +191,7 @@ export default async function ProductDetailPage({ params }: RouteProps) {
         itemListElement: [
           { '@type': 'ListItem', position: 1, name: 'Beranda', item: SITE_URL },
           { '@type': 'ListItem', position: 2, name: 'Katalog produk', item: `${SITE_URL}/produk` },
-          { '@type': 'ListItem', position: 3, name: category.name, item: `${SITE_URL}/produk?category=${encodeURIComponent(category.slug)}` },
+          { '@type': 'ListItem', position: 3, name: category.name, item: `${SITE_URL}/produk/kategori/${category.slug}` },
           { '@type': 'ListItem', position: 4, name: product.model || product.name, item: canonicalUrl },
         ],
       },
@@ -229,7 +235,7 @@ export default async function ProductDetailPage({ params }: RouteProps) {
             <ArrowLeft aria-hidden="true" className="size-4" /> Katalog
           </Link>
           <span aria-hidden="true">/</span>
-          <span>{category.name}</span>
+          <Link href={`/produk/kategori/${category.slug}`} className="transition hover:text-teal-800">{category.name}</Link>
           <span aria-hidden="true">/</span>
           <span aria-current="page" className="max-w-[14rem] truncate font-medium text-slate-900">{product.model || product.name}</span>
         </nav>
@@ -237,7 +243,7 @@ export default async function ProductDetailPage({ params }: RouteProps) {
         <section className="grid overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
           <div className="flex min-h-72 items-center justify-center bg-white p-6 sm:min-h-[32rem] sm:p-10">
             {product.images ? (
-              <img src={product.images} alt={`${product.name} — ${typeLabel} original ready stock`} className="max-h-[28rem] w-full object-contain" />
+              <Image src={product.images} alt={`${product.name} — ${typeLabel} original ready stock`} width={900} height={900} priority sizes="(min-width: 1024px) 45vw, 100vw" className="h-auto max-h-[28rem] w-auto max-w-full object-contain" />
             ) : (
               <div className="flex aspect-square w-full items-center justify-center rounded-2xl bg-slate-100 text-slate-500">Foto model belum tersedia</div>
             )}
@@ -333,6 +339,39 @@ export default async function ProductDetailPage({ params }: RouteProps) {
           </div>
         </section>
 
+        <section aria-labelledby="tentang-produk" className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+          <h2 id="tentang-produk" className="text-lg font-semibold text-slate-900">Tentang {product.name}</h2>
+          <div className="mt-4 space-y-4 text-sm leading-6 text-slate-700">
+            <p>
+              <strong>{product.name}</strong> adalah {typeLabel.toLowerCase()} lini {product.brand || 'HVAC'} yang bekerja dengan refrigerant {specs.refrigerant || 'standar industri'}{specs.horsepower ? ` pada kapasitas sekitar ${specs.horsepower} HP` : ''}.{specs.teknologi ? ` Model ini memakai teknologi ${specs.teknologi.toLowerCase()}` : ''} dan umum dipasang pada {specs.aplikasi ? specs.aplikasi.toLowerCase() : `sistem ${category.name.toLowerCase()}`} untuk kebutuhan pendinginan komersial maupun industri.
+            </p>
+            <p>
+              Sebagai distributor resmi sejak 2010, PT Berkat Mandiri Pendingin menyediakan {product.brand || 'unit ini'} dalam kondisi baru dan original langsung dari prinsipal{specs.garansi ? `, dilengkapi ${specs.garansi.toLowerCase()}` : ' dengan garansi resmi'}. Unit tersimpan di gudang Kawasan Industri MM2100 Bekasi sehingga siap dikirim ke 34 provinsi Indonesia dengan packing aman standar logistik HVAC.
+            </p>
+            <p>
+              Tim teknis kami siap membantu memastikan kecocokan model ini dengan kapasitas, refrigerant, dan catu daya sistem Anda{specs.cop ? ` — termasuk menghitung efisiensi (COP ${specs.cop}) terhadap target energi bangunan` : ''}. Konsultasi teknis dan penawaran harga distributor dilayani sepenuhnya gratis melalui WhatsApp sebelum Anda memutuskan pemesanan.
+            </p>
+          </div>
+        </section>
+
+        <section aria-labelledby="faq-produk" className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+          <h2 id="faq-produk" className="text-lg font-semibold text-slate-900">Pertanyaan umum tentang {product.model || product.name}</h2>
+          <div className="mt-4 space-y-5 text-sm leading-6 text-slate-700">
+            <div>
+              <h3 className="font-semibold text-slate-900">Berapa harga {typeLabel.toLowerCase()} {product.brand || ''} {product.model || ''}?</h3>
+              <p className="mt-1">Harga {product.name} diinformasikan langsung melalui WhatsApp tim sales PT Berkat Mandiri Pendingin (0813-5000-3423) sesuai kebutuhan, jumlah, dan lokasi proyek Anda — tanpa menampilkan harga pasaran di website. Penawaran spesial tersedia untuk kontraktor dan pembelian volume.</p>
+            </div>
+            <div>
+              <h3 className="font-semibold text-slate-900">Apakah {product.brand || 'kompresor ini'} ready stock dan bisa dikirim ke seluruh Indonesia?</h3>
+              <p className="mt-1">Ya, unit tersedia di gudang Kawasan Industri MM2100, Bekasi, dan dikirim ke 34 provinsi Indonesia dengan packing aman berdasarkan standar logistik HVAC.</p>
+            </div>
+            <div>
+              <h3 className="font-semibold text-slate-900">Kompresor ini cocok untuk aplikasi apa saja?</h3>
+              <p className="mt-1">{product.name} dengan refrigerant {specs.refrigerant || 'standar industri'} direkomendasikan untuk {specs.aplikasi || 'sistem pendingin komersial dan industri'}. Konsultasikan kapasitas dan kelistrikan Anda ke tim teknis kami secara gratis.</p>
+            </div>
+          </div>
+        </section>
+
         {related.length > 0 && (
           <section aria-labelledby="related-products" className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
             <div className="flex flex-wrap items-end justify-between gap-3">
@@ -340,7 +379,7 @@ export default async function ProductDetailPage({ params }: RouteProps) {
                 <h2 id="related-products" className="text-lg font-semibold text-slate-900">Produk {category.name} lainnya</h2>
                 <p className="mt-1 text-sm text-slate-600">Pilihan populer dari kategori yang sama — stok gudang Bekasi.</p>
               </div>
-              <Link href={`/produk?category=${encodeURIComponent(category.slug)}`} className="text-sm font-semibold text-teal-800 hover:underline">
+              <Link href={`/produk/kategori/${category.slug}`} className="text-sm font-semibold text-teal-800 hover:underline">
                 Lihat semua {category.name} →
               </Link>
             </div>

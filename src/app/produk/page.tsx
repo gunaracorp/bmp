@@ -102,6 +102,19 @@ export default async function ProductCatalogPage({ searchParams }: PageProps) {
         </div>
       </section>
 
+      <section aria-labelledby="tipe-kompresor" className="border-b border-slate-200 bg-white">
+        <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
+          <h2 id="tipe-kompresor" className="text-sm font-semibold text-slate-900">Jelajahi berdasarkan tipe kompresor</h2>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {categories.map((item) => (
+              <Link key={item.id} href={`/produk/kategori/${item.slug}`} className="rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-medium text-slate-700 transition hover:border-teal-300 hover:text-teal-800">
+                {item.name}
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <div className="mx-auto grid max-w-7xl gap-7 px-4 py-8 sm:px-6 lg:grid-cols-[230px_minmax(0,1fr)] lg:px-8 lg:py-10">
         <aside className="h-fit rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
           <div className="flex items-center gap-2 font-semibold"><SlidersHorizontal aria-hidden="true" className="size-4 text-teal-800" /> Temukan model</div>

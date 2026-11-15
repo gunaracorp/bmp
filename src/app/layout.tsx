@@ -46,6 +46,44 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const siteStructuredData = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'HVACBusiness',
+        '@id': `${SITE_URL}/#organization`,
+        name: 'PT Berkat Mandiri Pendingin',
+        alternateName: 'Berkat Mandiri Pendingin',
+        url: SITE_URL,
+        logo: `${SITE_URL}/images/logo.svg`,
+        image: `${SITE_URL}/images/hero/hero-1.png`,
+        description: 'Distributor HVAC resmi sejak 2010 — pusat AC, kompresor, refrigerant, spare part, chiller, dan sistem pendingin gedung terlengkap di Indonesia.',
+        foundingDate: '2010',
+        telephone: '+62-813-5000-3423',
+        address: {
+          '@type': 'PostalAddress',
+          addressLocality: 'Bekasi',
+          addressRegion: 'Jawa Barat',
+          addressCountry: 'ID',
+        },
+        areaServed: { '@type': 'Country', name: 'Indonesia' },
+        knowsAbout: ['Kompresor AC', 'Sistem HVAC', 'Chiller', 'VRV/VRF', 'Refrigerant', 'Spare part pendingin'],
+      },
+      {
+        '@type': 'WebSite',
+        '@id': `${SITE_URL}/#website`,
+        url: SITE_URL,
+        name: 'Berkat Mandiri Pendingin',
+        publisher: { '@id': `${SITE_URL}/#organization` },
+        inLanguage: 'id-ID',
+        potentialAction: {
+          '@type': 'SearchAction',
+          target: { '@type': 'EntryPoint', urlTemplate: `${SITE_URL}/produk?q={search_term_string}` },
+          'query-input': 'required name=search_term_string',
+        },
+      },
+    ],
+  };
   return (
     <html lang="id" suppressHydrationWarning>
       <body
@@ -53,6 +91,7 @@ export default function RootLayout({
       >
         {children}
         <Toaster richColors position="top-right" />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(siteStructuredData).replace(/</g, '\\u003c') }} />
       </body>
     </html>
   );
