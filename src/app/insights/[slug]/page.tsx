@@ -36,12 +36,52 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 const date = new Intl.DateTimeFormat('id-ID', { dateStyle: 'long' });
 const siteUrl = 'https://www.berkatmandiripendingin.com';
 
+/** Ambil pasangan tanya-jawab dari seksi "## FAQ ..." pada konten markdown artikel. */
+function extractFaqFromMarkdown(markdown: string): Array<{ question: string; answer: string }> {
+  const faq: Array<{ question: string; answer: string }> = [];
+  let inFaqSection = false;
+  let question = '';
+  let answerLines: string[] = [];
+  const flush = () => {
+    if (question && answerLines.length) {
+      const answer = answerLines
+        .join(' ')
+        .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
+        .replace(/[*_`>]/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+      if (answer) faq.push({ question, answer });
+    }
+    question = '';
+    answerLines = [];
+  };
+  for (const line of markdown.split('\n')) {
+    const h2 = line.match(/^##\s+(.*)/);
+    const h3 = line.match(/^###\s+(.*)/);
+    if (h2) {
+      if (inFaqSection) flush();
+      inFaqSection = /^faq\b/i.test(h2[1].trim());
+      continue;
+    }
+    if (!inFaqSection) continue;
+    if (h3) {
+      flush();
+      question = h3[1].replace(/[*_`]/g, '').trim();
+    } else if (question) {
+      answerLines.push(line);
+    }
+  }
+  if (inFaqSection) flush();
+  return faq;
+}
+
 export default async function InsightArticlePage({ params }: PageProps) {
   const { slug } = await params;
   const article = await getArticleBySlug(slug);
   if (!article) notFound();
 
   const articleUrl = `${siteUrl}/insights/${article.slug}`;
+  const faq = extractFaqFromMarkdown(article.content);
   const jsonLd = {
     '@context': 'https://schema.org',
     '@graph': [
@@ -51,10 +91,11 @@ export default async function InsightArticlePage({ params }: PageProps) {
         description: article.seoDescription || article.excerpt,
         datePublished: article.publishedAt?.toISOString(),
         dateModified: article.updatedAt.toISOString(),
-        author: { '@type': 'Organization', name: article.authorName },
-        publisher: { '@type': 'Organization', name: 'PT Berkat Mandiri Pendingin', url: siteUrl },
-        mainEntityOfPage: articleUrl,
-        image: article.coverImage ? [article.coverImage] : undefined,
+        author: { '@type': 'Organization', name: article.authorName, url: siteUrl },
+        publisher: { '@type': 'Organization', name: 'PT Berkat Mandiri Pendingin', url: siteUrl, logo: { '@type': 'ImageObject', url: `${siteUrl}/images/logo.svg` } },
+        mainEntityOfPage: { '@type': 'WebPage', '@id': articleUrl },
+        inLanguage: 'id-ID',
+        image: article.coverImage ? [`${siteUrl}${article.coverImage}`] : undefined,
       },
       {
         '@type': 'BreadcrumbList',
@@ -64,6 +105,16 @@ export default async function InsightArticlePage({ params }: PageProps) {
           { '@type': 'ListItem', position: 3, name: article.title, item: articleUrl },
         ],
       },
+      ...(faq.length
+        ? [{
+            '@type': 'FAQPage',
+            mainEntity: faq.map((item) => ({
+              '@type': 'Question',
+              name: item.question,
+              acceptedAnswer: { '@type': 'Answer', text: item.answer },
+            })),
+          }]
+        : []),
     ],
   };
 

@@ -2,6 +2,7 @@ import { and, eq, exists, inArray, isNull, lt, ne, notInArray, or, sql } from 'd
 import { drizzle } from 'drizzle-orm/pglite';
 import { bigint, boolean, doublePrecision, integer, pgTable, text, timestamp, uniqueIndex } from 'drizzle-orm/pg-core';
 import { getPgliteSync, resolvePgliteDataDir } from '@/lib/pglite-client';
+import { brandArticles } from '@/content/brand-articles';
 
 export const cmsArticles = pgTable('cms_articles', {
   id: text('id').primaryKey(),
@@ -500,7 +501,55 @@ export async function getSiteSeoSettings() {
   };
 }
 
+/**
+ * Guard satu kali per proses: pastikan artikel blog SEO per brand (dari src/content/brand-articles)
+ * sudah ada di tabel cms_articles. Strategi insert-if-missing — artikel yang sudah ada (misalnya
+ * sudah diedit admin) tidak pernah ditimpa. Dijalankan di dalam proses server Next sehingga aman
+ * terhadap akses multi-proses PGlite.
+ */
+let brandArticlesSeedPromise: Promise<void> | null = null;
+
+export function ensureBrandArticlesSeeded(): Promise<void> {
+  if (!brandArticlesSeedPromise) {
+    brandArticlesSeedPromise = (async () => {
+      const { inArray } = await import('drizzle-orm');
+      const slugs = brandArticles.map((article) => article.slug);
+      const existing = slugs.length
+        ? await cmsDb.select({ slug: cmsArticles.slug }).from(cmsArticles).where(inArray(cmsArticles.slug, slugs))
+        : [];
+      const existingSlugs = new Set(existing.map((row) => row.slug));
+      const pending = brandArticles.filter((article) => !existingSlugs.has(article.slug));
+      for (const article of pending) {
+        const publishedAt = new Date(article.publishedAt);
+        await cmsDb
+          .insert(cmsArticles)
+          .values({
+            id: `brand-${article.slug}`,
+            title: article.title,
+            slug: article.slug,
+            excerpt: article.excerpt,
+            content: article.content,
+            coverImage: article.coverImage,
+            seoTitle: article.seoTitle,
+            seoDescription: article.seoDescription,
+            status: 'published',
+            authorName: article.authorName,
+            publishedAt,
+            createdAt: publishedAt,
+            updatedAt: publishedAt,
+          })
+          .onConflictDoNothing({ target: cmsArticles.id });
+      }
+    })().catch((error) => {
+      brandArticlesSeedPromise = null;
+      throw error;
+    });
+  }
+  return brandArticlesSeedPromise;
+}
+
 export async function getPublishedArticles() {
+  await ensureBrandArticlesSeeded();
   return cmsDb.select().from(cmsArticles).where((await import('drizzle-orm')).eq(cmsArticles.status, 'published')).orderBy((await import('drizzle-orm')).desc(cmsArticles.publishedAt));
 }
 
@@ -516,12 +565,14 @@ export async function getApprovedTestimonials() {
 }
 
 export async function getArticleBySlug(slug: string) {
+  await ensureBrandArticlesSeeded();
   const { and, eq } = await import('drizzle-orm');
   const [article] = await cmsDb.select().from(cmsArticles).where(and(eq(cmsArticles.slug, slug), eq(cmsArticles.status, 'published'))).limit(1);
   return article ?? null;
 }
 
 export async function getPublishedArticleSlugs() {
+  await ensureBrandArticlesSeeded();
   return cmsDb.select({ slug: cmsArticles.slug, updatedAt: cmsArticles.updatedAt }).from(cmsArticles).where((await import('drizzle-orm')).eq(cmsArticles.status, 'published'));
 }
 

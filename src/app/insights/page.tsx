@@ -19,8 +19,28 @@ export default async function InsightsPage() {
   const articles = await getPublishedArticles();
   const [featured, ...rest] = articles;
 
+  const siteUrl = 'https://www.berkatmandiripendingin.com';
+  const blogJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Blog',
+    name: 'Insight HVAC — Berkat Mandiri Pendingin',
+    url: `${siteUrl}/insights`,
+    description: 'Panduan teknis HVAC, refrigerasi, dan pemilihan kompresor dari tim praktisi Berkat Mandiri Pendingin.',
+    inLanguage: 'id-ID',
+    publisher: { '@type': 'Organization', name: 'PT Berkat Mandiri Pendingin', url: siteUrl, logo: { '@type': 'ImageObject', url: `${siteUrl}/images/logo.svg` } },
+    blogPost: articles.map((article) => ({
+      '@type': 'BlogPosting',
+      headline: article.title,
+      url: `${siteUrl}/insights/${article.slug}`,
+      datePublished: article.publishedAt?.toISOString(),
+      dateModified: article.updatedAt.toISOString(),
+      author: { '@type': 'Organization', name: article.authorName },
+    })),
+  };
+
   return (
     <main className="min-h-screen bg-[#f7faf9] text-slate-950">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(blogJsonLd).replace(/</g, '\\u003c') }} />
       <header className="border-b border-white/10 bg-teal-950 text-white">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5 sm:px-8">
           <Link href="/" className="inline-flex items-center gap-2.5 font-semibold tracking-tight"><span className="flex size-9 items-center justify-center rounded-xl bg-white/10"><Snowflake aria-hidden="true" className="size-5" /></span>Berkat Mandiri Pendingin</Link>

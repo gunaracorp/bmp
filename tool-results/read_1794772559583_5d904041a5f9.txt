@@ -1,0 +1,830 @@
+     1→import { and, eq, exists, inArray, isNull, lt, ne, notInArray, or, sql } from 'drizzle-orm';
+     2→import { drizzle } from 'drizzle-orm/pglite';
+     3→import { bigint, boolean, doublePrecision, integer, pgTable, text, timestamp, uniqueIndex } from 'drizzle-orm/pg-core';
+     4→import { getPgliteSync, resolvePgliteDataDir } from '@/lib/pglite-client';
+     5→
+     6→export const cmsArticles = pgTable('cms_articles', {
+     7→  id: text('id').primaryKey(),
+     8→  title: text('title').notNull(),
+     9→  slug: text('slug').notNull(),
+    10→  excerpt: text('excerpt').notNull(),
+    11→  content: text('content').notNull(),
+    12→  coverImage: text('cover_image'),
+    13→  seoTitle: text('seo_title').notNull(),
+    14→  seoDescription: text('seo_description').notNull(),
+    15→  status: text('status').notNull(),
+    16→  authorName: text('author_name').notNull(),
+    17→  publishedAt: timestamp('published_at', { withTimezone: true }),
+    18→  createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    19→  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+    20→});
+    21→
+    22→export const cmsSettings = pgTable('cms_settings', {
+    23→  key: text('key').primaryKey(),
+    24→  value: text('value').notNull(),
+    25→  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+    26→});
+    27→
+    28→export const productImageAssets = pgTable('product_image_assets', {
+    29→  id: text('id').primaryKey(),
+    30→  ownerUserId: text('owner_user_id').notNull(),
+    31→  sourceFileId: text('source_file_id').notNull(),
+    32→  sourcePath: text('source_path').notNull(),
+    33→  sourcePathLower: text('source_path_lower').notNull(),
+    34→  fileName: text('file_name').notNull(),
+    35→  mimeType: text('mime_type').notNull(),
+    36→  sizeBytes: bigint('size_bytes', { mode: 'number' }).notNull(),
+    37→  revision: text('revision'),
+    38→  providerContentHash: text('provider_content_hash'),
+    39→  sourceModifiedAt: timestamp('source_modified_at', { withTimezone: true }),
+    40→  rightsStatus: text('rights_status').notNull(),
+    41→  rightsBasis: text('rights_basis').notNull(),
+    42→  reviewedBy: text('reviewed_by'),
+    43→  reviewedAt: timestamp('reviewed_at', { withTimezone: true }),
+    44→  sourceDeletedAt: timestamp('source_deleted_at', { withTimezone: true }),
+    45→  createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    46→  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+    47→  processingStatus: text('processing_status').notNull().default('DISCOVERED'),
+    48→  imageSha256: text('image_sha256'),
+    49→  perceptualHash: text('perceptual_hash'),
+    50→  width: integer('width'),
+    51→  height: integer('height'),
+    52→  storagePath: text('storage_path'),
+    53→  productId: text('product_id'),
+    54→  processingError: text('processing_error'),
+    55→  processedAt: timestamp('processed_at', { withTimezone: true }),
+    56→  qualityScore: doublePrecision('quality_score'),
+    57→  watermarkStatus: text('watermark_status').notNull().default('NOT_APPLIED'),
+    58→  watermarkVersion: text('watermark_version'),
+    59→}, (table) => [
+    60→  uniqueIndex('product_image_assets_owner_source_unique').on(table.ownerUserId, table.sourceFileId),
+    61→]);
+    62→
+    63→export const categories = pgTable('categories', {
+    64→  id: text('id').primaryKey(),
+    65→  name: text('name').notNull(),
+    66→  slug: text('slug').notNull(),
+    67→  description: text('description'),
+    68→  image: text('image'),
+    69→  sortOrder: integer('sort_order').notNull(),
+    70→  createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    71→  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+    72→});
+    73→
+    74→export const products = pgTable('products', {
+    75→  id: text('id').primaryKey(),
+    76→  name: text('name').notNull(),
+    77→  slug: text('slug').notNull(),
+    78→  description: text('description'),
+    79→  shortDesc: text('short_desc'),
+    80→  price: doublePrecision('price').notNull(),
+    81→  originalPrice: doublePrecision('original_price'),
+    82→  categoryId: text('category_id').notNull(),
+    83→  brand: text('brand'),
+    84→  model: text('model'),
+    85→  specifications: text('specifications'),
+    86→  images: text('images'),
+    87→  inStock: boolean('in_stock').notNull(),
+    88→  isFeatured: boolean('is_featured').notNull(),
+    89→  isNew: boolean('is_new').notNull(),
+    90→  minOrder: integer('min_order').notNull(),
+    91→  unit: text('unit').notNull(),
+    92→  viewCount: integer('view_count').notNull(),
+    93→  createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    94→  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+    95→});
+    96→
+    97→export const testimonials = pgTable('testimonials', {
+    98→  id: text('id').primaryKey(),
+    99→  name: text('name').notNull(),
+   100→  company: text('company'),
+   101→  position: text('position'),
+   102→  content: text('content').notNull(),
+   103→  rating: integer('rating').notNull(),
+   104→  avatar: text('avatar'),
+   105→  isApproved: boolean('is_approved').notNull(),
+   106→  createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+   107→});
+   108→
+   109→const globalForCms = globalThis as typeof globalThis & {
+   110→  __bmpCmsDrizzle?: ReturnType<typeof createCmsDrizzle>;
+   111→};
+   112→
+   113→function createCmsDrizzle() {
+   114→  const pglite = getPgliteSync();
+   115→  return {
+   116→    pglite,
+   117→    drizzleDb: drizzle(pglite, { schema: { cmsArticles, cmsSettings, categories, products, testimonials, productImageAssets } }),
+   118→  };
+   119→}
+   120→
+   121→/** Drizzle di atas PGlite in-process — chaining penuh, siap pakai sinkron. */
+   122→function getCmsDrizzle() {
+   123→  if (!globalForCms.__bmpCmsDrizzle) globalForCms.__bmpCmsDrizzle = createCmsDrizzle();
+   124→  return globalForCms.__bmpCmsDrizzle;
+   125→}
+   126→
+   127→export const rawCmsClient = {
+   128→  query: async <T = Record<string, unknown>>(text: string, params?: unknown[]) => {
+   129→    const { pglite } = getCmsDrizzle();
+   130→    const result = await pglite.query<T>(text, params);
+   131→    return { rows: result.rows, rowCount: result.affectedRows ?? result.rows.length };
+   132→  },
+   133→  release: () => undefined,
+   134→};
+   135→
+   136→export const cmsDb = getCmsDrizzle().drizzleDb;
+   137→
+   138→export const CMS_BACKUP_PUBLIC_TABLES = [
+   139→  'articles',
+   140→  'categories',
+   141→  'cms_articles',
+   142→  'cms_settings',
+   143→  'lead_requests',
+   144→  'product_image_assets',
+   145→  'product_matches',
+   146→  'products',
+   147→  'quote_items',
+   148→  'recommendation_history',
+   149→  'sales_quotes',
+   150→  'site_settings',
+   151→  'testimonials',
+   152→] as const;
+   153→
+   154→export type CmsDatabaseBackupSnapshot = {
+   155→  format: 'berkat-mandiri-cms-backup';
+   156→  version: 1;
+   157→  capturedAt: string;
+   158→  database: 'postgres';
+   159→  schema: 'public';
+   160→  tables: Array<{
+   161→    name: string;
+   162→    columns: Array<{
+   163→      name: string;
+   164→      type: string;
+   165→      nullable: boolean;
+   166→      default: string | null;
+   167→    }>;
+   168→    primaryKey: string[];
+   169→    rowCount: number;
+   170→    rows: Record<string, unknown>[];
+   171→  }>;
+   172→};
+   173→
+   174→function quotePostgresIdentifier(identifier: string) {
+   175→  return `"${identifier.replaceAll('"', '""')}"`;
+   176→}
+   177→
+   178→export async function exportCmsDatabaseSnapshot(): Promise<CmsDatabaseBackupSnapshot> {
+   179→  const client = rawCmsClient;
+   180→  const capturedAt = new Date().toISOString();
+   181→  let transactionOpen = false;
+   182→
+   183→  try {
+   184→    await client.query('BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY');
+   185→    transactionOpen = true;
+   186→
+   187→    const { rows: liveTables } = await client.query<{ table_name: string }>(
+   188→      'SELECT table_name FROM information_schema.tables WHERE table_schema = $1 AND table_type = $2 ORDER BY table_name',
+   189→      ['public', 'BASE TABLE'],
+   190→    );
+   191→    const liveTableNames = new Set(liveTables.map(({ table_name }) => table_name));
+   192→    const expectedTableNames = new Set<string>(CMS_BACKUP_PUBLIC_TABLES);
+   193→    const missingTables = CMS_BACKUP_PUBLIC_TABLES.filter((tableName) => !liveTableNames.has(tableName));
+   194→    const unexpectedTables = liveTables.map(({ table_name }) => table_name).filter((tableName) => !expectedTableNames.has(tableName));
+   195→
+   196→    if (missingTables.length || unexpectedTables.length) {
+   197→      throw new Error(`CMS_BACKUP_SCHEMA_MISMATCH: missing=${missingTables.join(',')} unexpected=${unexpectedTables.join(',')}`);
+   198→    }
+   199→
+   200→    const tables: CmsDatabaseBackupSnapshot['tables'] = [];
+   201→
+   202→    for (const tableName of CMS_BACKUP_PUBLIC_TABLES) {
+   203→      const [{ rows: columnRows }, { rows: keyRows }, { rows }] = await Promise.all([
+   204→        client.query<{
+   205→          column_name: string;
+   206→          data_type: string;
+   207→          is_nullable: 'YES' | 'NO';
+   208→          column_default: string | null;
+   209→        }>(
+   210→          'SELECT column_name, data_type, is_nullable, column_default FROM information_schema.columns WHERE table_schema = $1 AND table_name = $2 ORDER BY ordinal_position',
+   211→          ['public', tableName],
+   212→        ),
+   213→        client.query<{ column_name: string }>(
+   214→          'SELECT key_column_usage.column_name FROM information_schema.table_constraints JOIN information_schema.key_column_usage USING (constraint_catalog, constraint_schema, constraint_name, table_name) WHERE table_constraints.table_schema = $1 AND table_constraints.table_name = $2 AND table_constraints.constraint_type = $3 ORDER BY key_column_usage.ordinal_position',
+   215→          ['public', tableName, 'PRIMARY KEY'],
+   216→        ),
+   217→        client.query<Record<string, unknown>>(`SELECT * FROM "public".${quotePostgresIdentifier(tableName)}`),
+   218→      ]);
+   219→
+   220→      tables.push({
+   221→        name: tableName,
+   222→        columns: columnRows.map((column) => ({
+   223→          name: column.column_name,
+   224→          type: column.data_type,
+   225→          nullable: column.is_nullable === 'YES',
+   226→          default: column.column_default,
+   227→        })),
+   228→        primaryKey: keyRows.map(({ column_name }) => column_name),
+   229→        rowCount: rows.length,
+   230→        rows,
+   231→      });
+   232→    }
+   233→
+   234→    await client.query('COMMIT');
+   235→    transactionOpen = false;
+   236→
+   237→    return {
+   238→      format: 'berkat-mandiri-cms-backup',
+   239→      version: 1,
+   240→      capturedAt,
+   241→      database: 'postgres',
+   242→      schema: 'public',
+   243→      tables,
+   244→    };
+   245→  } catch (error) {
+   246→    if (transactionOpen) await client.query('ROLLBACK').catch(() => undefined);
+   247→    throw error;
+   248→  } finally {
+   249→    client.release();
+   250→  }
+   251→}
+   252→
+   253→export async function upsertDropboxImageAssets(assets: (typeof productImageAssets.$inferInsert)[]) {
+   254→  if (assets.length === 0) return;
+   255→  await cmsDb.insert(productImageAssets).values(assets).onConflictDoUpdate({
+   256→    target: [productImageAssets.ownerUserId, productImageAssets.sourceFileId],
+   257→    set: {
+   258→      sourcePath: sql`excluded.source_path`,
+   259→      sourcePathLower: sql`excluded.source_path_lower`,
+   260→      fileName: sql`excluded.file_name`,
+   261→      mimeType: sql`excluded.mime_type`,
+   262→      sizeBytes: sql`excluded.size_bytes`,
+   263→      revision: sql`excluded.revision`,
+   264→      providerContentHash: sql`excluded.provider_content_hash`,
+   265→      sourceModifiedAt: sql`excluded.source_modified_at`,
+   266→      rightsStatus: sql`CASE WHEN product_image_assets.provider_content_hash IS DISTINCT FROM excluded.provider_content_hash OR product_image_assets.revision IS DISTINCT FROM excluded.revision THEN 'PENDING_REVIEW' ELSE product_image_assets.rights_status END`,
+   267→      rightsBasis: sql`CASE WHEN product_image_assets.provider_content_hash IS DISTINCT FROM excluded.provider_content_hash OR product_image_assets.revision IS DISTINCT FROM excluded.revision THEN '' ELSE product_image_assets.rights_basis END`,
+   268→      reviewedBy: sql`CASE WHEN product_image_assets.provider_content_hash IS DISTINCT FROM excluded.provider_content_hash OR product_image_assets.revision IS DISTINCT FROM excluded.revision THEN NULL ELSE product_image_assets.reviewed_by END`,
+   269→      reviewedAt: sql`CASE WHEN product_image_assets.provider_content_hash IS DISTINCT FROM excluded.provider_content_hash OR product_image_assets.revision IS DISTINCT FROM excluded.revision THEN NULL ELSE product_image_assets.reviewed_at END`,
+   270→      processingStatus: sql`CASE WHEN product_image_assets.provider_content_hash IS DISTINCT FROM excluded.provider_content_hash OR product_image_assets.revision IS DISTINCT FROM excluded.revision THEN 'DISCOVERED' ELSE product_image_assets.processing_status END`,
+   271→      imageSha256: sql`CASE WHEN product_image_assets.provider_content_hash IS DISTINCT FROM excluded.provider_content_hash OR product_image_assets.revision IS DISTINCT FROM excluded.revision THEN NULL ELSE product_image_assets.image_sha256 END`,
+   272→      perceptualHash: sql`CASE WHEN product_image_assets.provider_content_hash IS DISTINCT FROM excluded.provider_content_hash OR product_image_assets.revision IS DISTINCT FROM excluded.revision THEN NULL ELSE product_image_assets.perceptual_hash END`,
+   273→      width: sql`CASE WHEN product_image_assets.provider_content_hash IS DISTINCT FROM excluded.provider_content_hash OR product_image_assets.revision IS DISTINCT FROM excluded.revision THEN NULL ELSE product_image_assets.width END`,
+   274→      height: sql`CASE WHEN product_image_assets.provider_content_hash IS DISTINCT FROM excluded.provider_content_hash OR product_image_assets.revision IS DISTINCT FROM excluded.revision THEN NULL ELSE product_image_assets.height END`,
+   275→      storagePath: sql`CASE WHEN product_image_assets.provider_content_hash IS DISTINCT FROM excluded.provider_content_hash OR product_image_assets.revision IS DISTINCT FROM excluded.revision THEN NULL ELSE product_image_assets.storage_path END`,
+   276→      productId: sql`CASE WHEN product_image_assets.provider_content_hash IS DISTINCT FROM excluded.provider_content_hash OR product_image_assets.revision IS DISTINCT FROM excluded.revision THEN NULL ELSE product_image_assets.product_id END`,
+   277→      processingError: sql`CASE WHEN product_image_assets.provider_content_hash IS DISTINCT FROM excluded.provider_content_hash OR product_image_assets.revision IS DISTINCT FROM excluded.revision THEN NULL ELSE product_image_assets.processing_error END`,
+   278→      processedAt: sql`CASE WHEN product_image_assets.provider_content_hash IS DISTINCT FROM excluded.provider_content_hash OR product_image_assets.revision IS DISTINCT FROM excluded.revision THEN NULL ELSE product_image_assets.processed_at END`,
+   279→      qualityScore: sql`CASE WHEN product_image_assets.provider_content_hash IS DISTINCT FROM excluded.provider_content_hash OR product_image_assets.revision IS DISTINCT FROM excluded.revision THEN NULL ELSE product_image_assets.quality_score END`,
+   280→      watermarkStatus: sql`CASE WHEN product_image_assets.provider_content_hash IS DISTINCT FROM excluded.provider_content_hash OR product_image_assets.revision IS DISTINCT FROM excluded.revision THEN 'NOT_APPLIED' ELSE product_image_assets.watermark_status END`,
+   281→      watermarkVersion: sql`CASE WHEN product_image_assets.provider_content_hash IS DISTINCT FROM excluded.provider_content_hash OR product_image_assets.revision IS DISTINCT FROM excluded.revision THEN NULL ELSE product_image_assets.watermark_version END`,
+   282→      sourceDeletedAt: null,
+   283→      updatedAt: sql`excluded.updated_at`,
+   284→    },
+   285→  });
+   286→}
+   287→
+   288→export async function markDropboxImageAssetsDeleted(ownerUserId: string, pathLower: string) {
+   289→  const now = new Date();
+   290→  await cmsDb.update(productImageAssets).set({ sourceDeletedAt: now, updatedAt: now }).where(and(
+   291→    eq(productImageAssets.ownerUserId, ownerUserId),
+   292→    sql`(${productImageAssets.sourcePathLower} = ${pathLower} OR ${productImageAssets.sourcePathLower} LIKE ${pathLower.replace(/[\\%_]/g, '\\$&')} || '/%')`,
+   293→  ));
+   294→}
+   295→
+   296→export async function getProductImageAssetsForReview(ownerUserId: string, limit = 50) {
+   297→  return cmsDb.select().from(productImageAssets).where(and(
+   298→    eq(productImageAssets.ownerUserId, ownerUserId),
+   299→    sql`${productImageAssets.sourceDeletedAt} IS NULL`,
+   300→  )).orderBy(sql`${productImageAssets.sourceModifiedAt} DESC NULLS LAST`).limit(Math.min(Math.max(limit, 1), 100));
+   301→}
+   302→
+   303→export async function getProductImageAssetStats(ownerUserId: string) {
+   304→  const approvedStatuses = ['OWNED', 'LICENSED', 'SUPPLIER_AUTHORIZED', 'MANUFACTURER_AUTHORIZED', 'PARTNER_AUTHORIZED', 'PUBLIC_REUSE_PERMITTED'];
+   305→  const [rightsRows, processingRows, actionableRows] = await Promise.all([
+   306→    cmsDb.select({ status: productImageAssets.rightsStatus, count: sql<number>`count(*)::int` })
+   307→      .from(productImageAssets)
+   308→      .where(and(eq(productImageAssets.ownerUserId, ownerUserId), isNull(productImageAssets.sourceDeletedAt)))
+   309→      .groupBy(productImageAssets.rightsStatus),
+   310→    cmsDb.select({ status: productImageAssets.processingStatus, count: sql<number>`count(*)::int` })
+   311→      .from(productImageAssets)
+   312→      .where(and(eq(productImageAssets.ownerUserId, ownerUserId), isNull(productImageAssets.sourceDeletedAt)))
+   313→      .groupBy(productImageAssets.processingStatus),
+   314→    cmsDb.select({ status: productImageAssets.processingStatus, count: sql<number>`count(*)::int` })
+   315→      .from(productImageAssets)
+   316→      .where(and(
+   317→        eq(productImageAssets.ownerUserId, ownerUserId),
+   318→        isNull(productImageAssets.sourceDeletedAt),
+   319→        inArray(productImageAssets.rightsStatus, approvedStatuses),
+   320→        inArray(productImageAssets.processingStatus, ['DISCOVERED', 'FAILED']),
+   321→      ))
+   322→      .groupBy(productImageAssets.processingStatus),
+   323→  ]);
+   324→  const rights = Object.fromEntries(rightsRows.map(({ status, count }) => [status, count]));
+   325→  const processing = Object.fromEntries(processingRows.map(({ status, count }) => [status, count]));
+   326→  const actionable = Object.fromEntries(actionableRows.map(({ status, count }) => [status, count]));
+   327→  return {
+   328→    total: Object.values(rights).reduce((sum, count) => sum + count, 0),
+   329→    pending: rights.PENDING_REVIEW ?? 0,
+   330→    approved: ['OWNED', 'LICENSED', 'SUPPLIER_AUTHORIZED', 'MANUFACTURER_AUTHORIZED', 'PARTNER_AUTHORIZED', 'PUBLIC_REUSE_PERMITTED'].reduce((sum, status) => sum + (rights[status] ?? 0), 0),
+   331→    rejected: rights.REJECTED ?? 0,
+   332→    ready: actionable.DISCOVERED ?? 0,
+   333→    retryable: actionable.FAILED ?? 0,
+   334→    processed: processing.PROCESSED ?? 0,
+   335→    failed: processing.FAILED ?? 0,
+   336→    invalid: processing.INVALID ?? 0,
+   337→    duplicates: processing.DUPLICATE ?? 0,
+   338→    processing: processing.PROCESSING ?? 0,
+   339→  };
+   340→}
+   341→
+   342→export async function claimProductImageAssets(ownerUserId: string, limit = 10, retryFailed = false) {
+   343→  const staleBefore = new Date(Date.now() - 20 * 60 * 1000);
+   344→  const claimableStatuses = retryFailed ? ['DISCOVERED', 'FAILED'] : ['DISCOVERED'];
+   345→  return cmsDb.transaction(async (transaction) => {
+   346→    const assets = await transaction.select().from(productImageAssets).where(and(
+   347→      eq(productImageAssets.ownerUserId, ownerUserId),
+   348→      isNull(productImageAssets.sourceDeletedAt),
+   349→      inArray(productImageAssets.rightsStatus, ['OWNED', 'LICENSED', 'SUPPLIER_AUTHORIZED', 'MANUFACTURER_AUTHORIZED', 'PARTNER_AUTHORIZED', 'PUBLIC_REUSE_PERMITTED']),
+   350→      or(
+   351→        inArray(productImageAssets.processingStatus, claimableStatuses),
+   352→        and(eq(productImageAssets.processingStatus, 'PROCESSING'), lt(productImageAssets.updatedAt, staleBefore)),
+   353→      ),
+   354→    )).orderBy(productImageAssets.createdAt).limit(Math.min(Math.max(limit, 1), 10)).for('update', { skipLocked: true });
+   355→
+   356→    if (assets.length) {
+   357→      await transaction.update(productImageAssets).set({ processingStatus: 'PROCESSING', processingError: null, updatedAt: new Date() })
+   358→        .where(and(eq(productImageAssets.ownerUserId, ownerUserId), inArray(productImageAssets.id, assets.map((asset) => asset.id))));
+   359→    }
+   360→    return assets;
+   361→  });
+   362→}
+   363→
+   364→export async function findProductImageBySha256(ownerUserId: string, imageSha256: string, excludeAssetId: string) {
+   365→  const [asset] = await cmsDb.select().from(productImageAssets).where(and(
+   366→    eq(productImageAssets.ownerUserId, ownerUserId),
+   367→    eq(productImageAssets.imageSha256, imageSha256),
+   368→    eq(productImageAssets.watermarkVersion, 'bmp-product-catalog-v1'),
+   369→    isNull(productImageAssets.sourceDeletedAt),
+   370→    inArray(productImageAssets.rightsStatus, ['OWNED', 'LICENSED', 'SUPPLIER_AUTHORIZED', 'MANUFACTURER_AUTHORIZED', 'PARTNER_AUTHORIZED', 'PUBLIC_REUSE_PERMITTED']),
+   371→    sql`${productImageAssets.storagePath} IS NOT NULL`,
+   372→    sql`${productImageAssets.id} <> ${excludeAssetId}`,
+   373→  )).limit(1);
+   374→  return asset ?? null;
+   375→}
+   376→
+   377→export async function saveProductImageProcessingResult(
+   378→  ownerUserId: string,
+   379→  assetId: string,
+   380→  expectedRevision: string | null,
+   381→  result: Partial<typeof productImageAssets.$inferInsert>,
+   382→) {
+   383→  const revisionFilter = expectedRevision === null
+   384→    ? isNull(productImageAssets.revision)
+   385→    : eq(productImageAssets.revision, expectedRevision);
+   386→  const [updated] = await cmsDb.update(productImageAssets).set({ ...result, updatedAt: new Date() }).where(and(
+   387→    eq(productImageAssets.ownerUserId, ownerUserId),
+   388→    eq(productImageAssets.id, assetId),
+   389→    eq(productImageAssets.processingStatus, 'PROCESSING'),
+   390→    revisionFilter,
+   391→    isNull(productImageAssets.sourceDeletedAt),
+   392→    inArray(productImageAssets.rightsStatus, ['OWNED', 'LICENSED', 'SUPPLIER_AUTHORIZED', 'MANUFACTURER_AUTHORIZED', 'PARTNER_AUTHORIZED', 'PUBLIC_REUSE_PERMITTED']),
+   393→  )).returning({ id: productImageAssets.id });
+   394→  return Boolean(updated);
+   395→}
+   396→
+   397→export async function findProductByExactSlug(slug: string) {
+   398→  const [product] = await cmsDb.select({ id: products.id, images: products.images }).from(products).where(eq(products.slug, slug)).limit(1);
+   399→  return product ?? null;
+   400→}
+   401→
+   402→export async function setProductImageIfEmpty(productId: string, imageUrl: string, ownerUserId: string, assetId: string) {
+   403→  const eligibleAsset = cmsDb.select({ id: productImageAssets.id }).from(productImageAssets).where(and(
+   404→    eq(productImageAssets.ownerUserId, ownerUserId),
+   405→    eq(productImageAssets.id, assetId),
+   406→    eq(productImageAssets.productId, productId),
+   407→    eq(productImageAssets.storagePath, imageUrl),
+   408→    inArray(productImageAssets.rightsStatus, ['OWNED', 'LICENSED', 'SUPPLIER_AUTHORIZED', 'MANUFACTURER_AUTHORIZED', 'PARTNER_AUTHORIZED', 'PUBLIC_REUSE_PERMITTED']),
+   409→    inArray(productImageAssets.processingStatus, ['PROCESSED', 'DUPLICATE']),
+   410→    isNull(productImageAssets.sourceDeletedAt),
+   411→  )).limit(1);
+   412→  const [updated] = await cmsDb.update(products).set({ images: imageUrl, updatedAt: new Date() }).where(and(
+   413→    eq(products.id, productId),
+   414→    or(isNull(products.images), eq(products.images, '')),
+   415→    exists(eligibleAsset),
+   416→  )).returning({ id: products.id });
+   417→  return Boolean(updated);
+   418→}
+   419→
+   420→export async function updateProductImageRightsReview(ownerUserId: string, assetId: string, rightsStatus: string, rightsBasis: string) {
+   421→  const now = new Date();
+   422→  const approved = ['OWNED', 'LICENSED', 'SUPPLIER_AUTHORIZED', 'MANUFACTURER_AUTHORIZED', 'PARTNER_AUTHORIZED', 'PUBLIC_REUSE_PERMITTED'].includes(rightsStatus);
+   423→  return cmsDb.transaction(async (transaction) => {
+   424→    const [current] = await transaction.select({
+   425→      storagePath: productImageAssets.storagePath,
+   426→      productId: productImageAssets.productId,
+   427→    }).from(productImageAssets).where(and(
+   428→      eq(productImageAssets.ownerUserId, ownerUserId),
+   429→      eq(productImageAssets.id, assetId),
+   430→      isNull(productImageAssets.sourceDeletedAt),
+   431→    )).for('update');
+   432→    if (!current) return null;
+   433→
+   434→    await transaction.update(productImageAssets).set({
+   435→      rightsStatus,
+   436→      rightsBasis,
+   437→      reviewedBy: ownerUserId,
+   438→      reviewedAt: now,
+   439→      ...(approved ? { processingError: null } : {
+   440→        processingStatus: 'DISCOVERED',
+   441→        processingError: current.storagePath ? 'Hak penggunaan dicabut; salinan publik sedang ditarik.' : null,
+   442→      }),
+   443→      updatedAt: now,
+   444→    }).where(and(eq(productImageAssets.ownerUserId, ownerUserId), eq(productImageAssets.id, assetId)));
+   445→    return current;
+   446→  });
+   447→}
+   448→
+   449→export async function hasOtherApprovedProductImageAsset(ownerUserId: string, assetId: string, storagePath: string) {
+   450→  const [asset] = await cmsDb.select({ id: productImageAssets.id }).from(productImageAssets).where(and(
+   451→    eq(productImageAssets.ownerUserId, ownerUserId),
+   452→    ne(productImageAssets.id, assetId),
+   453→    eq(productImageAssets.storagePath, storagePath),
+   454→    inArray(productImageAssets.rightsStatus, ['OWNED', 'LICENSED', 'SUPPLIER_AUTHORIZED', 'MANUFACTURER_AUTHORIZED', 'PARTNER_AUTHORIZED', 'PUBLIC_REUSE_PERMITTED']),
+   455→    isNull(productImageAssets.sourceDeletedAt),
+   456→  )).limit(1);
+   457→  return Boolean(asset);
+   458→}
+   459→
+   460→export async function clearProductImageIfMatches(productId: string, imageUrl: string) {
+   461→  await cmsDb.update(products).set({ images: null, updatedAt: new Date() }).where(and(
+   462→    eq(products.id, productId),
+   463→    eq(products.images, imageUrl),
+   464→  ));
+   465→}
+   466→
+   467→export async function clearProductImageAssetPublication(ownerUserId: string, assetId: string, storagePath: string) {
+   468→  await cmsDb.update(productImageAssets).set({
+   469→    storagePath: null,
+   470→    productId: null,
+   471→    processingStatus: 'DISCOVERED',
+   472→    processingError: null,
+   473→    processedAt: null,
+   474→    watermarkStatus: 'NOT_APPLIED',
+   475→    watermarkVersion: null,
+   476→    updatedAt: new Date(),
+   477→  }).where(and(
+   478→    eq(productImageAssets.ownerUserId, ownerUserId),
+   479→    eq(productImageAssets.id, assetId),
+   480→    eq(productImageAssets.storagePath, storagePath),
+   481→    notInArray(productImageAssets.rightsStatus, ['OWNED', 'LICENSED', 'SUPPLIER_AUTHORIZED', 'MANUFACTURER_AUTHORIZED', 'PARTNER_AUTHORIZED', 'PUBLIC_REUSE_PERMITTED']),
+   482→  ));
+   483→}
+   484→
+   485→export type CmsArticle = typeof cmsArticles.$inferSelect;
+   486→export type CmsCategory = typeof categories.$inferSelect;
+   487→export type CmsProduct = typeof products.$inferSelect;
+   488→
+   489→export async function getCmsSetting(key: string) {
+   490→  const [setting] = await cmsDb.select({ value: cmsSettings.value }).from(cmsSettings).where((await import('drizzle-orm')).eq(cmsSettings.key, key)).limit(1);
+   491→  return setting?.value ?? null;
+   492→}
+   493→
+   494→export async function getSiteSeoSettings() {
+   495→  const settings = await cmsDb.select().from(cmsSettings);
+   496→  const values = Object.fromEntries(settings.map(({ key, value }) => [key, value]));
+   497→  return {
+   498→    siteTitle: values.site_title || 'Berkat Mandiri Pendingin',
+   499→    siteDescription: values.site_description || 'Distributor HVAC resmi sejak 2010 di Kawasan MM2100 Bekasi. Pusat penjualan AC, kompresor, refrigerant, spare part, chiller, VRV/VRF, dan sistem pendingin gedung terlengkap.',
+   500→  };
+   501→}
+   502→
+   503→export async function getPublishedArticles() {
+   504→  return cmsDb.select().from(cmsArticles).where((await import('drizzle-orm')).eq(cmsArticles.status, 'published')).orderBy((await import('drizzle-orm')).desc(cmsArticles.publishedAt));
+   505→}
+   506→
+   507→export async function getApprovedTestimonials() {
+   508→  return cmsDb.select({
+   509→    id: testimonials.id,
+   510→    name: testimonials.name,
+   511→    company: testimonials.company,
+   512→    position: testimonials.position,
+   513→    content: testimonials.content,
+   514→    rating: testimonials.rating,
+   515→  }).from(testimonials).where((await import('drizzle-orm')).eq(testimonials.isApproved, true)).orderBy((await import('drizzle-orm')).desc(testimonials.createdAt));
+   516→}
+   517→
+   518→export async function getArticleBySlug(slug: string) {
+   519→  const { and, eq } = await import('drizzle-orm');
+   520→  const [article] = await cmsDb.select().from(cmsArticles).where(and(eq(cmsArticles.slug, slug), eq(cmsArticles.status, 'published'))).limit(1);
+   521→  return article ?? null;
+   522→}
+   523→
+   524→export async function getPublishedArticleSlugs() {
+   525→  return cmsDb.select({ slug: cmsArticles.slug, updatedAt: cmsArticles.updatedAt }).from(cmsArticles).where((await import('drizzle-orm')).eq(cmsArticles.status, 'published'));
+   526→}
+   527→
+   528→export async function getAdminArticles() {
+   529→  return cmsDb.select().from(cmsArticles).orderBy((await import('drizzle-orm')).desc(cmsArticles.updatedAt));
+   530→}
+   531→
+   532→export async function getAdminArticle(id: string) {
+   533→  const [article] = await cmsDb.select().from(cmsArticles).where((await import('drizzle-orm')).eq(cmsArticles.id, id)).limit(1);
+   534→  return article ?? null;
+   535→}
+   536→
+   537→export async function articleSlugExists(slug: string, excludingId?: string) {
+   538→  const { and, eq, ne } = await import('drizzle-orm');
+   539→  const predicate = excludingId
+   540→    ? and(eq(cmsArticles.slug, slug), ne(cmsArticles.id, excludingId))
+   541→    : eq(cmsArticles.slug, slug);
+   542→  const [article] = await cmsDb.select({ id: cmsArticles.id }).from(cmsArticles).where(predicate).limit(1);
+   543→  return Boolean(article);
+   544→}
+   545→
+   546→export async function saveCmsArticle(article: typeof cmsArticles.$inferInsert) {
+   547→  await cmsDb.insert(cmsArticles).values(article).onConflictDoUpdate({
+   548→    target: cmsArticles.id,
+   549→    set: {
+   550→      title: article.title,
+   551→      slug: article.slug,
+   552→      excerpt: article.excerpt,
+   553→      content: article.content,
+   554→      coverImage: article.coverImage,
+   555→      seoTitle: article.seoTitle,
+   556→      seoDescription: article.seoDescription,
+   557→      status: article.status,
+   558→      authorName: article.authorName,
+   559→      publishedAt: article.publishedAt,
+   560→      updatedAt: article.updatedAt,
+   561→    },
+   562→  });
+   563→}
+   564→
+   565→export async function deleteCmsArticle(id: string) {
+   566→  await cmsDb.delete(cmsArticles).where((await import('drizzle-orm')).eq(cmsArticles.id, id));
+   567→}
+   568→
+   569→export async function getAdminOverview() {
+   570→  const [{ count: articleCount }] = await cmsDb.select({ count: (await import('drizzle-orm')).count() }).from(cmsArticles);
+   571→  const [{ count: publishedCount }] = await cmsDb.select({ count: (await import('drizzle-orm')).count() }).from(cmsArticles).where((await import('drizzle-orm')).eq(cmsArticles.status, 'published'));
+   572→  const [{ count: productCount }] = await cmsDb.select({ count: (await import('drizzle-orm')).count() }).from(products);
+   573→  return { articleCount, publishedCount, productCount };
+   574→}
+   575→
+   576→export async function getAdminCategories() {
+   577→  return cmsDb.select().from(categories).orderBy(categories.sortOrder, categories.name);
+   578→}
+   579→
+   580→export async function getAdminProduct(id: string) {
+   581→  const [product] = await cmsDb.select().from(products).where((await import('drizzle-orm')).eq(products.id, id)).limit(1);
+   582→  return product ?? null;
+   583→}
+   584→
+   585→export async function getAdminProducts() {
+   586→  return cmsDb.select({ product: products, categoryName: categories.name }).from(products).leftJoin(categories, (await import('drizzle-orm')).eq(products.categoryId, categories.id)).orderBy((await import('drizzle-orm')).desc(products.updatedAt));
+   587→}
+   588→
+   589→export async function getPublishedCatalog() {
+   590→  return cmsDb.select({ product: products, category: { id: categories.id, name: categories.name, slug: categories.slug } }).from(products).innerJoin(categories, (await import('drizzle-orm')).eq(products.categoryId, categories.id)).where((await import('drizzle-orm')).eq(products.inStock, true)).orderBy((await import('drizzle-orm')).desc(products.createdAt));
+   591→}
+   592→
+   593→export async function getFeaturedCatalog() {
+   594→  return cmsDb.select({ product: products, category: { name: categories.name, slug: categories.slug } }).from(products).innerJoin(categories, (await import('drizzle-orm')).eq(products.categoryId, categories.id)).where((await import('drizzle-orm')).eq(products.isFeatured, true)).orderBy((await import('drizzle-orm')).desc(products.createdAt)).limit(8);
+   595→}
+   596→
+   597→export async function getCategoryList() {
+   598→  return cmsDb.select().from(categories).orderBy(categories.sortOrder, categories.name);
+   599→}
+   600→
+   601→export async function getAdminCategory(id: string) {
+   602→  const [category] = await cmsDb.select().from(categories).where((await import('drizzle-orm')).eq(categories.id, id)).limit(1);
+   603→  return category ?? null;
+   604→}
+   605→
+   606→export async function getCategoryProductCounts() {
+   607→  return cmsDb.select({ category: categories, count: (await import('drizzle-orm')).count(products.id) }).from(categories).leftJoin(products, (await import('drizzle-orm')).eq(products.categoryId, categories.id)).groupBy(categories.id).orderBy(categories.sortOrder, categories.name);
+   608→}
+   609→
+   610→export async function getPublicProductsBySlug(slug: string) {
+   611→  const { and, eq } = await import('drizzle-orm');
+   612→  return cmsDb.select({ product: products, category: { name: categories.name, slug: categories.slug } }).from(products).innerJoin(categories, (await import('drizzle-orm')).eq(products.categoryId, categories.id)).where(and(eq(products.slug, slug), eq(products.inStock, true))).limit(1);
+   613→}
+   614→
+   615→export async function incrementPublicProductView(id: string) {
+   616→  const { eq, sql } = await import('drizzle-orm');
+   617→  await cmsDb.update(products).set({ viewCount: sql`${products.viewCount} + 1` }).where(eq(products.id, id));
+   618→}
+   619→
+   620→export async function getPublishedCatalogSlugs() {
+   621→  return cmsDb.select({ slug: products.slug, updatedAt: products.updatedAt }).from(products).where((await import('drizzle-orm')).eq(products.inStock, true));
+   622→}
+   623→
+   624→export async function getCatalogSearchResults(query: string) {
+   625→  const { and, eq, ilike, or } = await import('drizzle-orm');
+   626→  const search = `%${query.replace(/[\\%_]/g, '\\$&')}%`;
+   627→  return cmsDb.select({ product: products, category: { name: categories.name, slug: categories.slug } }).from(products).innerJoin(categories, eq(products.categoryId, categories.id)).where(and(eq(products.inStock, true), or(ilike(products.name, search), ilike(products.shortDesc, search), ilike(products.brand, search)))).orderBy(products.name).limit(50);
+   628→}
+   629→
+   630→export async function getCatalogSummary() {
+   631→  const [{ count: categoriesCount }] = await cmsDb.select({ count: (await import('drizzle-orm')).count() }).from(categories);
+   632→  const [{ count: productsCount }] = await cmsDb.select({ count: (await import('drizzle-orm')).count() }).from(products);
+   633→  return { categoriesCount, productsCount };
+   634→}
+   635→
+   636→export async function getCatalogCategory(slug: string) {
+   637→  const { eq } = await import('drizzle-orm');
+   638→  const [category] = await cmsDb.select().from(categories).where(eq(categories.slug, slug)).limit(1);
+   639→  return category ?? null;
+   640→}
+   641→
+   642→export async function getCatalogProductsByCategory(slug: string) {
+   643→  const { eq } = await import('drizzle-orm');
+   644→  return cmsDb.select({ product: products, category: { name: categories.name, slug: categories.slug } }).from(products).innerJoin(categories, eq(products.categoryId, categories.id)).where(eq(categories.slug, slug)).orderBy(products.name);
+   645→}
+   646→
+   647→export async function getProductPriceRange() {
+   648→  const [{ min, max }] = await cmsDb.select({ min: (await import('drizzle-orm')).min(products.price), max: (await import('drizzle-orm')).max(products.price) }).from(products).where((await import('drizzle-orm')).eq(products.inStock, true));
+   649→  return { min: min ?? 0, max: max ?? 0 };
+   650→}
+   651→
+   652→export async function getCatalogFilterOptions() {
+   653→  const [brands, categoriesList] = await Promise.all([
+   654→    cmsDb.selectDistinct({ brand: products.brand }).from(products).where((await import('drizzle-orm')).eq(products.inStock, true)),
+   655→    cmsDb.select().from(categories).orderBy(categories.sortOrder, categories.name),
+   656→  ]);
+   657→  return { brands: brands.flatMap(({ brand }) => brand ? [brand] : []), categories: categoriesList };
+   658→}
+   659→
+   660→export async function getCatalogProductCount() {
+   661→  const [{ count }] = await cmsDb.select({ count: (await import('drizzle-orm')).count() }).from(products).where((await import('drizzle-orm')).eq(products.inStock, true));
+   662→  return count;
+   663→}
+   664→
+   665→export async function getCatalogCategoryCount() {
+   666→  const [{ count }] = await cmsDb.select({ count: (await import('drizzle-orm')).count() }).from(categories);
+   667→  return count;
+   668→}
+   669→
+   670→export async function getFeaturedProductSlugs() {
+   671→  return cmsDb.select({ slug: products.slug }).from(products).where((await import('drizzle-orm')).eq(products.isFeatured, true));
+   672→}
+   673→
+   674→export async function getCatalogBreadcrumb(slug: string) {
+   675→  const { eq } = await import('drizzle-orm');
+   676→  const [category] = await cmsDb.select({ name: categories.name, slug: categories.slug }).from(categories).where(eq(categories.slug, slug)).limit(1);
+   677→  return category ?? null;
+   678→}
+   679→
+   680→export async function getCmsRuntimeConfig() {
+   681→  return `pglite://${resolvePgliteDataDir()}`;
+   682→}
+   683→
+   684→export async function getCatalogProduct(id: string) {
+   685→  const [product] = await cmsDb.select().from(products).where((await import('drizzle-orm')).eq(products.id, id)).limit(1);
+   686→  return product ?? null;
+   687→}
+   688→
+   689→export async function getPublicCategories() {
+   690→  return cmsDb.select().from(categories).orderBy(categories.sortOrder, categories.name);
+   691→}
+   692→
+   693→export async function getPublicFeaturedProducts() {
+   694→  return cmsDb.select({ product: products, category: { name: categories.name, slug: categories.slug } }).from(products).innerJoin(categories, (await import('drizzle-orm')).eq(products.categoryId, categories.id)).where((await import('drizzle-orm')).and((await import('drizzle-orm')).eq(products.isFeatured, true), (await import('drizzle-orm')).eq(products.inStock, true))).orderBy((await import('drizzle-orm')).desc(products.createdAt)).limit(8);
+   695→}
+   696→
+   697→export async function getProductDetails(slug: string) {
+   698→  const { eq } = await import('drizzle-orm');
+   699→  const [row] = await cmsDb.select({ product: products, category: { name: categories.name, slug: categories.slug } }).from(products).innerJoin(categories, eq(products.categoryId, categories.id)).where(eq(products.slug, slug)).limit(1);
+   700→  return row ?? null;
+   701→}
+   702→
+   703→export async function getCatalogLastModified() {
+   704→  const [{ updatedAt }] = await cmsDb.select({ updatedAt: (await import('drizzle-orm')).max(products.updatedAt) }).from(products);
+   705→  return updatedAt ?? new Date();
+   706→}
+   707→
+   708→export async function getCatalogPageData() {
+   709→  const [categoriesList, productsList] = await Promise.all([
+   710→    getPublicCategories(),
+   711→    getPublishedCatalog(),
+   712→  ]);
+   713→  return { categories: categoriesList, products: productsList };
+   714→}
+   715→
+   716→export async function getAdminSettings() {
+   717→  const [siteTitle, siteDescription] = await Promise.all([getCmsSetting('site_title'), getCmsSetting('site_description')]);
+   718→  return { siteTitle: siteTitle ?? 'Berkat Mandiri Pendingin', siteDescription: siteDescription ?? 'Distributor HVAC resmi sejak 2010 di Kawasan MM2100 Bekasi.' };
+   719→}
+   720→
+   721→export async function getArticleTotalCount() {
+   722→  const [{ count }] = await cmsDb.select({ count: (await import('drizzle-orm')).count() }).from(cmsArticles);
+   723→  return count;
+   724→}
+   725→
+   726→export async function getPublicArticleTotalCount() {
+   727→  const [{ count }] = await cmsDb.select({ count: (await import('drizzle-orm')).count() }).from(cmsArticles).where((await import('drizzle-orm')).eq(cmsArticles.status, 'published'));
+   728→  return count;
+   729→}
+   730→
+   731→export async function getCmsRecentArticles(limit = 5) {
+   732→  return cmsDb.select().from(cmsArticles).orderBy((await import('drizzle-orm')).desc(cmsArticles.updatedAt)).limit(limit);
+   733→}
+   734→
+   735→export async function getCmsSettings() {
+   736→  return cmsDb.select().from(cmsSettings);
+   737→}
+   738→
+   739→export async function getCmsDashboardData() {
+   740→  const [counts, articles, settings, productsList, categoriesList] = await Promise.all([
+   741→    getAdminOverview(), getCmsRecentArticles(5), getAdminSettings(), getAdminProducts(), getAdminCategories(),
+   742→  ]);
+   743→  return { counts, articles, settings, products: productsList, categories: categoriesList };
+   744→}
+   745→
+   746→export async function getAdminCatalog() {
+   747→  const [productsList, categoriesList] = await Promise.all([getAdminProducts(), getAdminCategories()]);
+   748→  return { products: productsList, categories: categoriesList };
+   749→}
+   750→
+   751→export async function getCatalogProductsPage(
+   752→  query: string,
+   753→  categorySlug: string,
+   754→  pageSize: number,
+   755→  offset: number,
+   756→) {
+   757→  const { and, count, eq, ilike, or } = await import('drizzle-orm');
+   758→  const predicates = [eq(products.inStock, true)];
+   759→  const normalizedQuery = query.trim().slice(0, 100);
+   760→  if (normalizedQuery) {
+   761→    const escapedQuery = normalizedQuery.replace(/[\\%_]/g, '\\$&');
+   762→    const search = `%${escapedQuery}%`;
+   763→    predicates.push(or(
+   764→      ilike(products.name, search),
+   765→      ilike(products.model, search),
+   766→      ilike(products.brand, search),
+   767→      ilike(products.shortDesc, search),
+   768→    )!);
+   769→  }
+   770→  if (categorySlug) {
+   771→    predicates.push(eq(categories.slug, categorySlug));
+   772→  }
+   773→
+   774→  const where = and(...predicates);
+   775→  const [rows, [{ total }]] = await Promise.all([
+   776→    cmsDb.select({ product: products, category: { name: categories.name, slug: categories.slug } })
+   777→      .from(products)
+   778→      .innerJoin(categories, eq(products.categoryId, categories.id))
+   779→      .where(where)
+   780→      .orderBy(products.name)
+   781→      .limit(Math.min(Math.max(pageSize, 1), 48))
+   782→      .offset(Math.max(offset, 0)),
+   783→    cmsDb.select({ total: count() })
+   784→      .from(products)
+   785→      .innerJoin(categories, eq(products.categoryId, categories.id))
+   786→      .where(where),
+   787→  ]);
+   788→
+   789→  return { products: rows, total: Number(total) };
+   790→}
+   791→
+   792→export async function getAdminProductsPage(query: string, pageSize: number, offset: number) {
+   793→  const { count, ilike, or } = await import('drizzle-orm');
+   794→  const normalizedQuery = query.trim().slice(0, 100);
+   795→  const escapedQuery = normalizedQuery.replace(/[\\%_]/g, '\\$&');
+   796→  const search = `%${escapedQuery}%`;
+   797→  const where = normalizedQuery
+   798→    ? or(
+   799→        ilike(products.name, search),
+   800→        ilike(products.model, search),
+   801→        ilike(products.brand, search),
+   802→        ilike(products.shortDesc, search),
+   803→      )
+   804→    : undefined;
+   805→  const [rows, [{ total }]] = await Promise.all([
+   806→    cmsDb.select({ product: products, categoryName: categories.name })
+   807→      .from(products)
+   808→      .leftJoin(categories, (await import('drizzle-orm')).eq(products.categoryId, categories.id))
+   809→      .where(where)
+   810→      .orderBy((await import('drizzle-orm')).desc(products.updatedAt), products.name)
+   811→      .limit(Math.min(Math.max(pageSize, 1), 100))
+   812→      .offset(Math.max(offset, 0)),
+   813→    cmsDb.select({ total: count() }).from(products).where(where),
+   814→  ]);
+   815→
+   816→  return { products: rows, total: Number(total) };
+   817→}
+   818→
+   819→export async function getHomepageCatalogPreview() {
+   820→  return cmsDb.select({
+   821→    product: products,
+   822→    category: { id: categories.id, name: categories.name, slug: categories.slug },
+   823→  })
+   824→    .from(products)
+   825→    .innerJoin(categories, (await import('drizzle-orm')).eq(products.categoryId, categories.id))
+   826→    .where((await import('drizzle-orm')).eq(products.inStock, true))
+   827→    .orderBy((await import('drizzle-orm')).desc(products.createdAt), products.name)
+   828→    .limit(48);
+   829→}
+   830→
