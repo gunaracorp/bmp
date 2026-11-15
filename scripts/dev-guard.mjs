@@ -76,6 +76,8 @@ function removeStalePostmasterPid() {
 }
 
 function cleanCorruptTurbopackCache() {
+  const CORRUPTION_SIGNATURES = ['corrupted database', 'Failed to restore task data', 'os error 22'];
+  let shouldClean = false;
   try {
     const panics = fs.readdirSync(os.tmpdir()).filter((f) => f.startsWith('next-panic-'));
     for (const file of panics) {
@@ -86,14 +88,32 @@ function cleanCorruptTurbopackCache() {
       } catch {
         continue;
       }
-      if (content.includes('corrupted database') || content.includes('Failed to restore task data')) {
-        fs.rmSync(path.join(process.cwd(), '.next'), { recursive: true, force: true });
+      if (CORRUPTION_SIGNATURES.some((signature) => content.includes(signature))) {
+        shouldClean = true;
         fs.rmSync(full, { force: true });
-        console.log('[dev-guard] Cache Turbopack korup dibersihkan — kompilasi ulang bersih.');
       }
     }
   } catch {
     /* abaikan */
+  }
+  // Log run sebelumnya juga jadi sumber sinyal: panic Turbopack kadang hanya
+  // tertulis di dev.log dan tidak meninggalkan berkas next-panic-* di tmpdir.
+  try {
+    const logFile = path.join(process.cwd(), 'dev.log');
+    if (fs.existsSync(logFile)) {
+      const tail = fs.readFileSync(logFile, 'utf8').slice(-200_000);
+      if (CORRUPTION_SIGNATURES.some((signature) => tail.includes(signature))) shouldClean = true;
+    }
+  } catch {
+    /* abaikan */
+  }
+  if (shouldClean) {
+    try {
+      fs.rmSync(path.join(process.cwd(), '.next'), { recursive: true, force: true });
+      console.log('[dev-guard] Cache Turbopack korup terdeteksi — dibersihkan untuk kompilasi ulang bersih.');
+    } catch {
+      /* abaikan */
+    }
   }
 }
 

@@ -3,20 +3,51 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight, ArrowUpRight, BookOpen, Snowflake } from 'lucide-react';
 import { getPublishedArticles } from '@/lib/cms-db';
+import { brandArticles } from '@/content/brand-articles';
+import type { ArticleTopic } from '@/content/brand-articles/brand-article-types';
 
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: 'Insight HVAC dan Pendingin Udara',
-  description: 'Panduan praktis HVAC, pendingin udara, refrigerasi, dan pemilihan produk dari tim Berkat Mandiri Pendingin.',
+  description:
+    'Panduan praktis HVAC, pendingin udara, refrigerasi, pemilihan produk per merek dan per tipe kompresor, dari tim Berkat Mandiri Pendingin.',
   alternates: { canonical: '/insights' },
   openGraph: { type: 'website', title: 'Insight HVAC | Berkat Mandiri Pendingin', description: 'Panduan praktis HVAC dan sistem pendingin dari tim Berkat Mandiri Pendingin.' },
 };
 
 const date = new Intl.DateTimeFormat('id-ID', { dateStyle: 'long' });
 
+type ArticleRow = Awaited<ReturnType<typeof getPublishedArticles>>[number];
+type ArticleWithTopic = ArticleRow & { topic: ArticleTopic };
+
+const topicBySlug = new Map<string, ArticleTopic>(brandArticles.map((a) => [a.slug, a.topic ?? 'brand']));
+
+const sections: Array<{ topic: ArticleTopic; heading: string; sub: string; anchor: string }> = [
+  { topic: 'kategori', heading: 'Panduan per Tipe Kompresor', sub: 'Rotary, scroll, piston, semi-hermetik, screw — cara kerja, aplikasi, dan cara memilih tiap tipe.', anchor: 'tipe-kompresor' },
+  { topic: 'brand', heading: 'Panduan per Merek', sub: 'Bitzer, Copeland, Daikin, Carrier, dan 20+ merek dunia lain yang tersedia di katalog BMP.', anchor: 'panduan-merek' },
+  { topic: 'edukasi', heading: 'Panduan Teknis & Edukasi', sub: 'Cara memilih kompresor, menghitung kapasitas, perawatan, diagnosis kerusakan, dan refrigeran.', anchor: 'edukasi' },
+];
+
+function ArticleCard({ article }: { article: ArticleWithTopic }) {
+  return (
+    <article className="group overflow-hidden rounded-2xl border border-border bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+      <Link href={`/insights/${article.slug}`} className="relative block aspect-[16/9] overflow-hidden bg-gradient-to-br from-teal-900 to-emerald-700">
+        {article.coverImage ? <Image src={article.coverImage} alt="" fill unoptimized sizes="(max-width: 768px) 100vw, 33vw" className="object-cover transition duration-500 group-hover:scale-105" /> : <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(circle_at_70%_20%,rgba(153,246,228,0.3),transparent_28%)]" />}
+      </Link>
+      <div className="p-5">
+        <p className="text-xs font-medium text-teal-800">{article.publishedAt ? date.format(article.publishedAt) : 'Insight'}</p>
+        <Link href={`/insights/${article.slug}`} className="mt-3 block text-lg font-semibold leading-snug tracking-tight group-hover:text-teal-800">{article.title}</Link>
+        <p className="mt-2 line-clamp-3 text-sm leading-6 text-muted-foreground">{article.excerpt}</p>
+        <Link href={`/insights/${article.slug}`} className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-teal-800">Baca selengkapnya <ArrowRight aria-hidden="true" className="size-4" /></Link>
+      </div>
+    </article>
+  );
+}
+
 export default async function InsightsPage() {
-  const articles = await getPublishedArticles();
+  const articles = (await getPublishedArticles()) as ArticleWithTopic[];
+  for (const article of articles) article.topic = topicBySlug.get(article.slug) ?? 'brand';
   const [featured, ...rest] = articles;
 
   const siteUrl = 'https://www.berkatmandiripendingin.com';
@@ -50,7 +81,9 @@ export default async function InsightsPage() {
       <section className="relative overflow-hidden bg-teal-950 text-white">
         <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(45,212,191,0.23),transparent_44%)]" />
         <div className="relative mx-auto grid max-w-7xl gap-8 px-5 py-16 sm:px-8 sm:py-20 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-end lg:py-24">
-          <div><p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-teal-200"><BookOpen aria-hidden="true" className="size-4" /> Pusat pengetahuan HVAC</p><h1 className="mt-5 max-w-3xl text-4xl font-semibold leading-tight tracking-tight sm:text-5xl">Insight untuk sistem pendingin yang lebih andal.</h1><p className="mt-5 max-w-2xl text-base leading-7 text-teal-50/80">Panduan teknis, wawasan produk, dan praktik terbaik untuk membantu setiap keputusan HVAC.</p></div>
+          <div><p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-teal-200"><BookOpen aria-hidden="true" className="size-4" /> Pusat pengetahuan HVAC</p><h1 className="mt-5 max-w-3xl text-4xl font-semibold leading-tight tracking-tight sm:text-5xl">Insight untuk sistem pendingin yang lebih andal.</h1><p className="mt-5 max-w-2xl text-base leading-7 text-teal-50/80">Panduan teknis, wawasan produk, dan praktik terbaik untuk membantu setiap keputusan HVAC.</p>
+            <nav aria-label="Kategori artikel" className="mt-7 flex flex-wrap gap-2.5">{sections.map((section) => <Link key={section.anchor} href={`#${section.anchor}`} className="rounded-full border border-white/20 bg-white/5 px-4 py-2 text-sm font-medium text-teal-100 transition hover:bg-white/15 hover:text-white">{section.heading}</Link>)}</nav>
+          </div>
           <div className="rounded-2xl border border-white/15 bg-white/5 p-5 backdrop-blur-sm"><p className="text-sm font-medium text-teal-100">Dari praktisi untuk praktisi</p><p className="mt-2 text-sm leading-6 text-white/70">Informasi yang jelas untuk kontraktor, teknisi, tim pengadaan, dan pemilik usaha.</p><Link href="/" className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-teal-200 hover:text-white">Kenali layanan kami <ArrowUpRight aria-hidden="true" className="size-4" /></Link></div>
         </div>
       </section>
@@ -62,7 +95,23 @@ export default async function InsightsPage() {
           </Link>
           <div className="flex flex-col justify-center p-6 sm:p-9 lg:p-12"><p className="text-sm font-medium text-teal-800">{featured.publishedAt ? date.format(featured.publishedAt) : 'Insight terbaru'}</p><Link href={`/insights/${featured.slug}`} className="mt-4 text-2xl font-semibold leading-tight tracking-tight transition hover:text-teal-800 sm:text-3xl">{featured.title}</Link><p className="mt-4 line-clamp-4 text-sm leading-7 text-muted-foreground">{featured.excerpt}</p><div className="mt-7 text-xs text-muted-foreground">Oleh {featured.authorName}</div><Link href={`/insights/${featured.slug}`} className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-teal-800 hover:text-teal-950">Baca artikel <ArrowRight aria-hidden="true" className="size-4" /></Link></div>
         </div> : null}
-        {rest.length ? <div className="mt-14"><div className="mb-6 flex items-end justify-between"><div><p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-700">Perluas wawasan</p><h2 className="mt-2 text-2xl font-semibold tracking-tight">Artikel terbaru</h2></div><span className="text-sm text-muted-foreground">{articles.length} artikel</span></div><div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">{rest.map((article) => <article key={article.id} className="group overflow-hidden rounded-2xl border border-border bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"><Link href={`/insights/${article.slug}`} className="relative block aspect-[16/9] overflow-hidden bg-gradient-to-br from-teal-900 to-emerald-700">{article.coverImage ? <Image src={article.coverImage} alt="" fill unoptimized sizes="(max-width: 768px) 100vw, 33vw" className="object-cover transition duration-500 group-hover:scale-105" /> : <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(circle_at_70%_20%,rgba(153,246,228,0.3),transparent_28%)]" />}</Link><div className="p-5"><p className="text-xs font-medium text-teal-800">{article.publishedAt ? date.format(article.publishedAt) : 'Insight'}</p><Link href={`/insights/${article.slug}`} className="mt-3 block text-lg font-semibold leading-snug tracking-tight group-hover:text-teal-800">{article.title}</Link><p className="mt-2 line-clamp-3 text-sm leading-6 text-muted-foreground">{article.excerpt}</p><Link href={`/insights/${article.slug}`} className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-teal-800">Baca selengkapnya <ArrowRight aria-hidden="true" className="size-4" /></Link></div></article>)}</div></div> : null}
+        {rest.length ? sections.map((section) => {
+          const items = rest.filter((article) => article.topic === section.topic);
+          if (!items.length) return null;
+          return (
+            <div key={section.topic} id={section.anchor} className="mt-14 scroll-mt-24">
+              <div className="mb-6 flex items-end justify-between gap-4">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-700">Perluas wawasan</p>
+                  <h2 className="mt-2 text-2xl font-semibold tracking-tight">{section.heading}</h2>
+                  <p className="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">{section.sub}</p>
+                </div>
+                <span className="shrink-0 text-sm text-muted-foreground">{items.length} artikel</span>
+              </div>
+              <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">{items.map((article) => <ArticleCard key={article.id} article={article} />)}</div>
+            </div>
+          );
+        }) : null}
         {!articles.length ? <div className="rounded-3xl border border-dashed border-teal-900/20 bg-white px-6 py-16 text-center"><span className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-teal-50 text-teal-800"><BookOpen aria-hidden="true" className="size-6" /></span><h2 className="mt-5 text-xl font-semibold">Insight baru sedang disiapkan</h2><p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-muted-foreground">Kunjungi kembali untuk membaca panduan produk, HVAC, dan sistem pendingin dari tim kami.</p><Link href="/" className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-teal-800">Kembali ke beranda <ArrowRight aria-hidden="true" className="size-4" /></Link></div> : null}
       </section>
       <footer className="border-t border-border bg-white"><div className="mx-auto flex max-w-7xl flex-col gap-3 px-5 py-7 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-8"><Link href="/" className="font-medium text-slate-900">PT Berkat Mandiri Pendingin</Link><p>Informasi HVAC dan pendingin udara dari tim kami.</p><Link href="/admin/login" className="hover:text-teal-800">Masuk admin</Link></div></footer>

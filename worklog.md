@@ -832,3 +832,25 @@ Stage Summary:
 - DB PGlite kembali sehat via pipeline deterministik (614 produk, 19 kategori, 18 Bitzer asli, tabel sales lengkap) — snapshot commit kini adalah baseline yang benar-benar bisa dibuka
 - dev-guard.mjs kini menyembuhkan 3 kelas kegagalan boot: direktori runtime hilang, postmaster.pid basi, cache Turbopack korup
 - Repo github.com/gunaracorp/bmp sinkron penuh; lint & seluruh route 200
+
+---
+
+Task ID: 10
+Agent: Z.ai (GLM) — Main Orchestrator
+Task: Permintaan owner — tambahkan artikel SEO level kategori (rotary, scroll, screw, dll.) dan artikel edukasi seperti "cara memilih kompresor" untuk memperluas jangkauan kata kunci, lalu push ke GitHub
+
+Work Log:
+- KONTEN BARU 16 ARTIKEL (total blog kini 41): 9 artikel kategori (kompresor-rotary, twin-rotary, dc-inverter, scroll, scroll-komersial, piston-hermetik, semi-hermetik, screw, unit-kondensor-kompak — semua slug cocok dengan kategori asli di DB) + 7 artikel edukasi (cara-memilih-kompresor-ac, perbedaan-kompresor-rotary-scroll-piston-screw, kompresor-inverter-vs-on-off, cara-menghitung-kapasitas-kompresor-pk-hp-btu, tanda-kompresor-rusak-dan-solusinya, tips-merawat-kompresor-agar-awet, panduan-refrigeran-r32-r410a-r290)
+- ARSITEKTUR: 4 berkas konten baru group-e/f/g/h di src/content/brand-articles (±700-900 kata per artikel, H2/H3, 4 FAQ per artikel yang otomatis jadi FAQPage JSON-LD); tipe BrandArticleSeed mendapat field opsional topic ('brand' | 'kategori' | 'edukasi') untuk pengelompokan tampilan
+- DATA AKURAT: jumlah produk per kategori dikutip langsung dari query PGlive (rotary 120, twin 43, inverter 58, scroll 109, scroll komersial 34, piston 48, semi-hermetik 47, screw 24, unit kondensor 17); konversi PK/HP/BTU memakai konvensi label umum dengan disclaimer datasheet; GWP refrigeran memakai nilai publikasi umum — nol harga di seluruh konten
+- INTERNAL LINKING KELUARGA: setiap artikel kategori saling terhubung dengan artikel edukasi dan kategori produk /produk/kategori/<slug>, katalog utama, AI Product Finder, serta CTA WhatsApp wa.me/6281350003423 dengan pesan terformat per topik
+- INDEX PAGE UPGRADE: /insights kini mengelompokkan kartu artikel per topik (Panduan per Tipe Kompresor · 9, Panduan per Merek · 25, Panduan Teknis & Edukasi · 6 + 1 featured), chip anchor navigasi di hero, kartu artikel diekstrak ke komponen ArticleCard; topic dipetakan dari seed content array tanpa migrasi kolom DB
+- AUTO-SEED REUSE: ensureBrandArticlesSeeded() otomatis meng-insert 16 artikel baru (insert-if-missing by slug) — sitemap langsung 678 URL (41 URL /insights/*) tanpa perubahan sitemap.ts
+- VERIFIKASI: lint exit 0; 16 rute artikel baru + halaman kategori terkait semua 200; JSON-LD halaman baru lengkap (Article + FAQPage + BreadcrumbList + Question/Answer); meta title/description ter-render; penghitung seksi 9/25/6+featured terverifikasi; nol "Rp <angka>" di /insights
+- STABILITAS: satu kejadian Turbopack korup saat restart (os error 22) — dev-guard.mjs diperkuat lagi: bersihkan .next bila jejak korupsi ditemukan di dev.log run sebelumnya (tidak hanya berkas next-panic-* di tmpdir); server pulih dan seluruh ujian ulang hijau
+
+Stage Summary:
+- Blog /insights dari 25 menjadi 41 artikel ber-topik lengkap: merek × 25, tipe kompresor × 9, edukasi transversal × 7 — menutup seluruh corong pencarian: informasional (cara memilih/hitung/perawatan), komersial-investigasi (perbandingan tipe & merek), sampai navigasional (katalog)
+- Sitemap 678 URL dengan 41 halaman artikel; FAQPage JSON-LD otomatis di tiap artikel; struktur topik ber-ancor memperkuat hub-and-spoke SEO
+- Pipeline konten kini satu pintu: tambah objek di group-*.ts → blog + seksi + sitemap + admin otomatis
+- dev-guard makin kedap: 3 sinyal korupsi (panic file, dev.log, pid basi) dibersihkan otomatis saat boot
