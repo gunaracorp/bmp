@@ -31,7 +31,6 @@ import {
 import Image from 'next/image';
 import { useCartStore } from '@/stores/cart-store';
 import { toast } from 'sonner';
-import { formatRupiah } from '@/lib/format';
 import { NoSSR } from '@/components/ui/no-ssr';
 import { useT, type DictKey } from '@/lib/i18n';
 import Link from 'next/link';
@@ -149,12 +148,6 @@ export function ProductCatalog({ categories, allProducts, onProductClick }: Prop
     switch (sort) {
       case 'name':
         filtered.sort((a, b) => a.name.localeCompare(b.name));
-        break;
-      case 'price-asc':
-        filtered.sort((a, b) => a.price - b.price);
-        break;
-      case 'price-desc':
-        filtered.sort((a, b) => b.price - a.price);
         break;
       default: // newest — keep original order (already sorted by createdAt desc from seed)
         break;
@@ -324,8 +317,6 @@ export function ProductCatalog({ categories, allProducts, onProductClick }: Prop
                   <SelectContent>
                     <SelectItem value="newest">{t('catalog.sort.newest')}</SelectItem>
                     <SelectItem value="name">{t('catalog.sort.name')}</SelectItem>
-                    <SelectItem value="price-asc">{t('catalog.sort.priceLow')}</SelectItem>
-                    <SelectItem value="price-desc">{t('catalog.sort.priceHigh')}</SelectItem>
                   </SelectContent>
                 </Select>
               </NoSSR>
@@ -523,11 +514,6 @@ function ProductCardGrid({ product, onClick, onAddToCart }: {
                 {t('catalog.badge.featured')}
               </Badge>
             )}
-            {product.originalPrice && product.originalPrice > product.price && (
-              <Badge className="bg-red-600 text-white text-[10px] px-1.5 py-0 font-semibold">
-                -{Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}%
-              </Badge>
-            )}
           </div>
           <motion.div
             className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300 flex items-center justify-center gap-2"
@@ -564,15 +550,17 @@ function ProductCardGrid({ product, onClick, onAddToCart }: {
           {product.category && (
             <p className="text-[10px] text-gray-600 mb-1.5 font-medium">{product.category.name}</p>
           )}
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-sm font-bold text-teal-800">
-              {product.price > 0 ? formatRupiah(product.price) : 'Harga melalui penawaran'}
-            </span>
-            {product.originalPrice && product.originalPrice > product.price && (
-              <span className="text-[10px] text-red-500 line-through font-medium">
-                {formatRupiah(product.originalPrice)}
-              </span>
-            )}
+          <div className="flex items-center justify-between gap-2">
+            <a
+              href={`https://wa.me/6281350003423?text=${encodeURIComponent(`Halo, saya ingin tanya harga untuk *${product.name}* (${product.brand ?? ''}). Mohon info harga terbaik dan stoknya.`)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="inline-flex items-center gap-1 rounded-md bg-emerald-600 px-2 py-1.5 text-[11px] font-bold text-white shadow-sm transition hover:bg-emerald-700"
+            >
+              <MessageCircle className="h-3 w-3" />
+              Tanya Harga
+            </a>
           </div>
         </CardContent>
       </Card>
@@ -609,11 +597,6 @@ function ProductCardList({ product, onClick, onAddToCart }: {
             )}
             <div className="absolute top-1 left-1 flex flex-col gap-0.5">
               {product.isNew && <Badge className="bg-emerald-600 text-white text-[8px] px-1 py-0 font-semibold">{t('catalog.badge.new')}</Badge>}
-              {product.originalPrice && product.originalPrice > product.price && (
-                <Badge className="bg-red-600 text-white text-[8px] px-1 py-0 font-semibold">
-                  -{Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}%
-                </Badge>
-              )}
             </div>
           </div>
           <div className="flex-1 min-w-0 flex flex-col justify-between">
@@ -640,16 +623,16 @@ function ProductCardList({ product, onClick, onAddToCart }: {
               )}
             </div>
             <div className="flex items-center justify-between mt-2 flex-wrap gap-2">
-              <div className="flex items-baseline gap-2">
-                <span className="text-base font-bold text-teal-800">
-                  {product.price > 0 ? formatRupiah(product.price) : 'Harga melalui penawaran'}
-                </span>
-                {product.originalPrice && product.originalPrice > product.price && (
-                  <span className="text-xs text-red-500 line-through font-medium">
-                    {formatRupiah(product.originalPrice)}
-                  </span>
-                )}
-              </div>
+              <a
+                href={`https://wa.me/6281350003423?text=${encodeURIComponent(`Halo, saya ingin tanya harga untuk *${product.name}* (${product.brand ?? ''}). Mohon info harga terbaik dan stoknya.`)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className="inline-flex items-center gap-1.5 rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-bold text-white shadow-sm transition hover:bg-emerald-700"
+              >
+                <MessageCircle className="h-3.5 w-3.5" />
+                Tanya Harga
+              </a>
               <div className="flex gap-2">
                 <Button
                   variant="outline"

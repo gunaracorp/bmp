@@ -8,7 +8,6 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { GitCompareArrows, PlusCircle, Trash2, X } from 'lucide-react';
-import { formatRupiah } from '@/lib/format';
 import { useQuoteStore } from '@/stores/quote-store';
 import { COMPARE_MAX, useCompareList, type CompareItem } from './finder-types';
 import { WhatsAppLeadButton } from './WhatsAppLeadButton';
@@ -46,7 +45,6 @@ export function ComparisonTable() {
     );
   }
 
-  const cheapest = Math.min(...items.map((item) => item.price));
   const bestScore = Math.max(...items.map((item) => item.compatibilityScore));
 
   return (
@@ -89,10 +87,17 @@ export function ComparisonTable() {
                 </Td>
               ))}
             </Row>
-            <Row label="Harga / unit">
+            <Row label="Harga">
               {items.map((item) => (
-                <Td key={item.productId} highlight={item.price === cheapest}>
-                  <span className={`font-bold ${item.price === cheapest ? 'text-teal-800' : 'text-slate-900'}`}>{formatRupiah(item.price)}</span>
+                <Td key={item.productId}>
+                  <a
+                    href={`https://wa.me/6281350003423?text=${encodeURIComponent(`Halo, saya ingin tanya harga untuk *${item.name}* (${item.brand}). Mohon info harga terbaik dan stoknya.`)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 rounded-md bg-emerald-600 px-2.5 py-1.5 text-xs font-bold text-white shadow-sm transition hover:bg-emerald-700"
+                  >
+                    Tanya Harga
+                  </a>
                 </Td>
               ))}
             </Row>
@@ -142,8 +147,7 @@ export function ComparisonTable() {
           source="compare"
           needType="lainnya"
           quotePayload={{
-            items: items.map((item) => ({ productName: item.name, quantity: 1, unitPrice: item.price })),
-            totalEstimate: items.reduce((sum, item) => sum + item.price, 0),
+            items: items.map((item) => ({ productName: item.name, quantity: 1 })),
           }}
         />
       </div>

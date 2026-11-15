@@ -22,7 +22,6 @@ export default async function QuoteDetailPage({ params }: { params: Promise<{ id
   if (!result) notFound();
 
   const { quote, items } = result;
-  const subtotal = items.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
 
   return (
     <main className="min-h-screen bg-[#f5f8f7] text-slate-950">
@@ -60,8 +59,6 @@ export default async function QuoteDetailPage({ params }: { params: Promise<{ id
             note: item.note ?? undefined,
           }))}
           needInstallation={quote.needInstallation}
-          subtotal={subtotal}
-          totalEstimate={quote.totalEstimate}
           customer={{ name: quote.customerName, company: quote.companyName, city: quote.kota }}
           projectNote={quote.projectNote}
         />

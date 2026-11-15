@@ -6,7 +6,6 @@ import { getCatalogProductsPage, getPublicCategories } from '@/lib/cms-db';
 const SITE_URL = 'https://www.berkatmandiripendingin.com';
 const PAGE_SIZE = 24;
 const number = new Intl.NumberFormat('id-ID');
-const currency = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 });
 type PageProps = { searchParams: Promise<{ q?: string; category?: string; page?: string }> };
 
 export async function generateMetadata({ searchParams }: PageProps): Promise<Metadata> {
@@ -124,7 +123,7 @@ export default async function ProductCatalogPage({ searchParams }: PageProps) {
             <button type="submit" className="inline-flex h-11 items-center justify-center rounded-lg bg-teal-900 px-4 text-sm font-semibold text-white transition hover:bg-teal-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 focus-visible:ring-offset-2">Terapkan filter</button>
             {(query || category) && <Link href="/produk" className="text-center text-sm font-medium text-teal-800 underline underline-offset-4">Hapus filter</Link>}
           </form>
-          <p className="mt-5 border-t border-slate-100 pt-4 text-xs leading-5 text-slate-500">Harga, stok, dan kompatibilitas perlu dikonfirmasi oleh tim sebelum pemesanan.</p>
+          <p className="mt-5 border-t border-slate-100 pt-4 text-xs leading-5 text-slate-500">Harga tidak ditampilkan di website — tanyakan langsung via WhatsApp untuk penawaran terbaik sesuai kebutuhan proyek Anda.</p>
         </aside>
 
         <section aria-label="Daftar kompresor" className="min-w-0">
@@ -154,7 +153,7 @@ export default async function ProductCatalogPage({ searchParams }: PageProps) {
                         <div><dt className="text-slate-500">Catu daya</dt><dd className="mt-1 font-semibold text-slate-800">{specs.power_supply || 'Lihat detail'}</dd></div>
                       </dl>
                       <div className="mt-auto flex items-center justify-between gap-3 pt-5">
-                        <span className="text-sm font-semibold text-slate-800">{product.price > 0 ? currency.format(product.price) : 'Harga melalui penawaran'}</span>
+                        <a href={`https://wa.me/6281350003423?text=${encodeURIComponent(`Halo, saya ingin tanya harga untuk *${product.name}* (${product.brand ?? ''}). Mohon info harga terbaik dan stoknya.`)}`} target="_blank" rel="noopener noreferrer" className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-emerald-600 px-3 text-xs font-bold text-white transition hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2">Tanya Harga</a>
                         <Link href={`/produk/${product.slug}`} className="inline-flex h-9 items-center gap-1 rounded-lg bg-teal-900 px-3 text-xs font-semibold text-white transition hover:bg-teal-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 focus-visible:ring-offset-2">Spesifikasi <ArrowRight aria-hidden="true" className="size-3.5" /></Link>
                       </div>
                     </div>

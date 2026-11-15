@@ -8,7 +8,6 @@
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Loader2, MessageCircle, X } from 'lucide-react';
-import { formatRupiah } from '@/lib/format';
 
 type Variant = 'compact' | 'primary' | 'link';
 
@@ -19,14 +18,13 @@ export type WhatsAppLeadButtonProps = {
   productId?: string;
   productName?: string;
   quantity?: number;
-  estimate?: number;
   needType?: string;
   source?: 'ai-finder' | 'quote' | 'product' | 'contact' | 'compare';
   quoteId?: string;
-  /** Item quote lengkap (untuk sumber 'quote'). */
+  /** Item quote lengkap (untuk sumber 'quote') — tanpa harga, mode RFQ. */
   quotePayload?: {
-    items: Array<{ productName: string; quantity: number; unitPrice: number }>;
-    totalEstimate: number;
+    items: Array<{ productName: string; quantity: number; unitPrice?: number }>;
+    totalEstimate?: number;
     customer?: { name?: string; company?: string; city?: string };
     needInstallation?: boolean;
     note?: string;
@@ -40,7 +38,6 @@ export function WhatsAppLeadButton({
   productId,
   productName,
   quantity,
-  estimate,
   needType,
   source = 'contact',
   quoteId,
@@ -76,15 +73,14 @@ export function WhatsAppLeadButton({
       };
 
       if (quotePayload) {
-        // Mode quote — produk & estimasi dari payload quote.
+        // Mode quote — daftar produk tanpa harga (mode RFQ).
         body = {
           ...body,
           needType,
           productName: quotePayload.items.map((item) => `${item.productName} × ${item.quantity}`).join('; ').slice(0, 400),
-          estimate: quotePayload.totalEstimate,
         };
       } else {
-        body = { ...body, productId, productName, quantity, estimate, needType };
+        body = { ...body, productId, productName, quantity, needType };
       }
 
       const response = await fetch('/api/leads', {
@@ -173,14 +169,13 @@ export function WhatsAppLeadButton({
 
               {quotePayload ? (
                 <div className="mb-4 rounded-2xl bg-slate-50 p-3 text-xs leading-relaxed text-slate-700">
-                  <p className="font-semibold text-slate-900">Ringkasan quote Anda:</p>
+                  <p className="font-semibold text-slate-900">Daftar permintaan Anda:</p>
                   <p className="mt-1">{quotePayload.items.map((item) => `${item.productName} × ${item.quantity}`).join(' · ')}</p>
-                  <p className="mt-1 font-semibold text-teal-800">Total estimasi: {formatRupiah(quotePayload.totalEstimate)}</p>
+                  <p className="mt-1 font-semibold text-emerald-700">Harga akan ditawarkan langsung oleh sales via WhatsApp.</p>
                 </div>
               ) : productName ? (
                 <div className="mb-4 rounded-2xl bg-slate-50 p-3 text-xs text-slate-700">
                   <span className="font-semibold text-slate-900">Model diminati:</span> {productName}
-                  {estimate ? <span className="ml-1 text-teal-800">({formatRupiah(estimate)})</span> : null}
                 </div>
               ) : null}
 

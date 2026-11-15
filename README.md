@@ -6,14 +6,14 @@
 
 ### *Katalog Kompresor & Sistem Pendingin Terbesar yang Pernah Dibangun dengan Next.js*
 
-**620 produk · 25 brand dunia · 512 gambar unik · 623 URL terindeks · SEO Total menuju #1 Google** 🚀
+**614 produk · 25 brand dunia · 530 gambar unik · 618 URL terindeks · Katalog Bitzer asli · Harga via WhatsApp · SEO Total menuju #1 Google** 🚀
 
 ![Next.js 16](https://img.shields.io/badge/Next.js-16_App_Router-black?style=for-the-badge&logo=next.js)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5_strict-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
 ![Tailwind CSS 4](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PGlite-PostgreSQL_WASM-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
 ![Prisma](https://img.shields.io/badge/Prisma-6_legacy_seed-2D3748?style=for-the-badge&logo=prisma&logoColor=white)
-![SEO Ready](https://img.shields.io/badge/SEO-JSON--LD_×5_+_623_URL-F59E0B?style=for-the-badge&logo=google&logoColor=white)
+![SEO Ready](https://img.shields.io/badge/SEO-JSON--LD_×5_+_618_URL-F59E0B?style=for-the-badge&logo=google&logoColor=white)
 
 **Bahasa:** 🇮🇩 Indonesia · [🇬🇧 English](#-english-documentation)
 
@@ -46,13 +46,14 @@
 
 Website resmi **PT Berkat Mandiri Pendingin** — distributor HVAC resmi sejak **2010** di Kawasan Industri MM2100, Bekasi. 
 
-Ini bukan sekadar company profile. Ini adalah **mesin pemasaran digital lengkap**: katalog B2B raksasa berisi 620 produk lintas 25 brand dunia, ditopang database PostgreSQL tertanam, CMS admin penuh, dan persenjataan SEO terlengkap yang pernah dipasang di website distributor pendingin Indonesia — semuanya dirancang untuk **merajai halaman pencarian Google**.
+Ini bukan sekadar company profile. Ini adalah **mesin pemasaran digital lengkap**: katalog B2B raksasa berisi 614 produk lintas 25 brand dunia, ditopang database PostgreSQL tertanam, CMS admin penuh, dan persenjataan SEO terlengkap yang pernah dipasang di website distributor pendingin Indonesia — semuanya dirancang untuk **merajai halaman pencarian Google**.
 
 | 💪 Kemampuan | Keterangan |
 |---|---|
-| 🛒 **Katalog 620 Produk** | 19 kategori — 558 di antaranya kompresor (rotary, twin-rotary, DC inverter, scroll, piston hermetik, semi-hermetik, screw, condensing unit) |
+| 🛒 **Katalog 614 Produk** | 19 kategori — kompresor rotary, twin-rotary, DC inverter, scroll, piston hermetik, semi-hermetik, screw, condensing unit + **18 model BITZER asli ber-spesifikasi datasheet** |
 | 🏭 **25 Brand Dunia** | Bitzer, Copeland, Daikin, Panasonic, LG, Gree, Danfoss, Carrier, Hitachi, Mitsubishi, Sanyo, Toshiba, dan lainnya |
-| 🖼️ **512 Gambar Produk Unik** | 12 foto studio hasil kecerdasan buatan + 500 derivatif berbadge brand via pemrosesan `sharp` — nol gambar generik, nol gambar rusak |
+| 💬 **Harga via WhatsApp** | Website tidak menampilkan harga — setiap produk punya tombol "Tanya Harga" yang membuka chat WhatsApp dengan pesan terformat (nama, model, URL produk) |
+| 🖼️ **530 Gambar Produk Unik** | 12 foto studio hasil kecerdasan buatan + 500 derivatif berbadge brand + 18 gambar BITZER re-badge model asli via `sharp` — nol gambar generik |
 | 💚 **SEO Total 5 Lapis** | JSON-LD: Organization · LocalBusiness · WebSite · Product+Offer+FAQPage · BreadcrumbList |
 | 🤖 **Siap AI Search** | `llms.txt` — website terbaca ChatGPT, Perplexity, dan Google AI Overviews |
 | 🛍️ **Keranjang + Order WhatsApp** | Pesanan terformat rapi otomatis terkirim ke WhatsApp sales |
@@ -60,7 +61,7 @@ Ini bukan sekadar company profile. Ini adalah **mesin pemasaran digital lengkap*
 | 📰 **Insight HVAC** | Blog/artikel ber-SEO dari CMS — amunisi konten untuk dominasi kata kunci |
 | 🌏 **Dwi-Bahasa ID/EN** | 320+ kunci terjemahan, satu klik seluruh antarmuka berganti, preferensi tersimpan permanen |
 | 📱 **Mobile-First Responsif** | Sempurna dari layar 320px sampai ultrawide — terverifikasi iPhone 14 & desktop |
-| ⚡ **Harga Dinamis + Diskon** | Harga distributor Rupiah, badge hemat %, strikethrough harga normal |
+| ⚡ **Harga via WhatsApp** | Tanpa harga pasaran — penawaran resmi langsung dari sales (nama produk & URL otomatis terkirim ke chat) |
 
 ---
 
@@ -68,10 +69,10 @@ Ini bukan sekadar company profile. Ini adalah **mesin pemasaran digital lengkap*
 
 | Metrik | Nilai | Cara Verifikasi Sendiri |
 |---|---:|---|
-| Produk di database | **620** | Halaman `/produk` — badge "620 varian terdaftar" |
+| Produk di database | **614** | Halaman `/produk` — badge "614 varian terdaftar" |
 | Kategori | **19** | 10 kategori utama + 9 sub-kategori kompresor |
-| Gambar produk kompresor | **512** | `ls public/images/products/kompresor/ \| wc -l` |
-| URL di sitemap | **623** | Buka `/sitemap.xml` |
+| Gambar produk kompresor | **530** | `ls public/images/products/kompresor/ \| wc -l` |
+| URL di sitemap | **618** | Buka `/sitemap.xml` |
 | Brand tersedia | **25** | Filter brand di halaman katalog |
 | Tipe structured data (JSON-LD) | **5** | View-source halaman detail produk |
 | Skrip pipeline otomatis | **6** | Folder `scripts/` |
@@ -84,12 +85,12 @@ Ini bukan sekadar company profile. Ini adalah **mesin pemasaran digital lengkap*
 | Rute | Fungsi | SEO |
 |---|---|---|
 | `/` | Homepage 13 section — hero, kategori, katalog, testimoni, galeri, kontak | JSON-LD Organization + LocalBusiness + WebSite |
-| `/produk` | Katalog universal 620 varian — filter kategori, brand, pencarian instan | Metadata katalog + canonical |
-| `/produk/[slug]` | Detail produk — spesifikasi teknis, harga, trust badges, produk terkait | **JSON-LD Product + Offer + FAQPage + BreadcrumbList** |
+| `/produk` | Katalog universal 614 varian — filter kategori, brand, pencarian instan | Metadata katalog + canonical |
+| `/produk/[slug]` | Detail produk — spesifikasi teknis datasheet, CTA WhatsApp, trust badges, produk terkait | **JSON-LD Product + FAQPage + BreadcrumbList** |
 | `/insights` | Artikel HVAC dari CMS | Metadata artikel |
 | `/insights/[slug]` | Detail artikel | Metadata artikel + canonical |
 | `/admin` | CMS — login, dashboard, produk, artikel, SEO guide, settings, image intelligence, backup | `noindex` |
-| `/sitemap.xml` | 623 URL — dihasilkan otomatis | ✅ |
+| `/sitemap.xml` | 618 URL — dihasilkan otomatis | ✅ |
 | `/robots.txt` | Direktif per-bot + lokasi sitemap | ✅ |
 | `/llms.txt` | Manifest untuk AI search engine | ✅ |
 
@@ -135,7 +136,7 @@ Ini bukan sekadar company profile. Ini adalah **mesin pemasaran digital lengkap*
 │  PGlite ◀── scripts/generate-compressor-catalog.ts               │
 │        │      (500 produk + 500 deskripsi SEO unik)              │
 │        ▼                                                         │
-│  620 produk final                                                │
+│  614 produk final                                                │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -208,9 +209,9 @@ Ini adalah bagian paling ambisius dari proyek ini — dan cara kerjanya layak di
 
    LANGKAH 3: DESKRIPSI SEO UNIK           LANGKAH 4: MASUK DATABASE
    ┌──────────────────────────┐            ┌───────────────────────────────┐
-   │ 5 opener × 5 mid ×       │            │ PGlite: 620 produk, 19        │
+   │ 5 opener × 5 mid ×       │            │ PGlite: 614 produk, 19        │
    │ 5 closer template        │  ──────▶   │ kategori, sitemap bertambah   │
-   │ + variabel brand/HP/     │            │ 623 URL, setiap halaman       │
+   │ + variabel brand/HP/     │            │ 618 URL, setiap halaman       │
    │ refrigerant/kota/aplikasi│            │ produk ber-JSON-LD penuh      │
    │ = 500 deskripsi bebas    │            │                               │
    │   duplikat               │            │                               │
@@ -229,7 +230,7 @@ Ini adalah bagian paling ambisius dari proyek ini — dan cara kerjanya layak di
 |---|---|
 | 🧱 **JSON-LD `@graph`** | Organization + LocalBusiness (alamat, telepon, area served) + WebSite — di homepage |
 | 🛒 **JSON-LD Produk** | `Product` + `Offer` (harga IDR, availability) + `seller` + `BreadcrumbList` + `FAQPage` 3 pertanyaan — di setiap halaman produk |
-| 🗺️ **Sitemap otomatis** | 623 URL — semua produk, kategori, artikel |
+| 🗺️ **Sitemap otomatis** | 618 URL — semua produk, kategori, artikel |
 | 🤖 **robots.txt dinamis** | Direktif eksplisit per-bot + lokasi sitemap |
 | 🧠 **llms.txt** | Manifest khusus AI search engine (ChatGPT, Perplexity, Google AI) |
 | 🏷️ **Metadata lengkap** | Title template, 25 kata kunci, canonical, OpenGraph `id_ID`, Twitter Card `summary_large_image` |
@@ -258,7 +259,7 @@ Akses: `https://domain-anda.com/admin`
 | Modul | Kemampuan |
 |---|---|
 | 📊 **Dashboard** | Ringkasan konten & status situs |
-| 📦 **Products** | CRUD 620 produk — nama, harga, stok, brand, kategori, gambar |
+| 📦 **Products** | CRUD 614 produk — nama, stok, brand, kategori, gambar (harga via WhatsApp) |
 | 📰 **Articles** | Tulis & publikasikan artikel SEO untuk `/insights` |
 | 🧠 **Image Intelligence** | Analisis & pemrosesan gambar produk cerdas |
 | 🧭 **SEO Guide** | Panduan SEO tertanam di dalam CMS |
@@ -353,11 +354,11 @@ berkat-mandiri-pendingin/
 ├── 📁 public/
 │   └── 📁 images/
 │       ├── 📁 categories/          # 10 gambar kategori
-│       ├── 📁 products/kompresor/  # 512 gambar unik (12 base AI + 500 derivatif)
+│       ├── 📁 products/kompresor/  # 530 gambar unik (12 base AI + 500 derivatif)
 │       ├── 📁 hero/                # hero + OpenGraph image
 │       └── 📄 logo.svg             # logo vektor (JSON-LD + favicon)
 ├── 📁 db/
-│   ├── 📁 pglite-data/             # 💾 DATABASE LIVE — PostgreSQL tertanam (620 produk)
+│   ├── 📁 pglite-data/             # 💾 DATABASE LIVE — PostgreSQL tertanam (614 produk)
 │   └── 📄 custom.db                # SQLite warisan — sumber pipeline seed
 ├── 📁 prisma/
 │   ├── 📄 schema.prisma            # skema warisan: Category, Product, Testimonial…
@@ -371,7 +372,7 @@ berkat-mandiri-pendingin/
 │   │   ├── 📁 admin/               # CMS: dashboard, products, articles,
 │   │   │                           #      seo-guide, settings, backups, login
 │   │   ├── 📄 layout.tsx           # metadata SEO lengkap + dwi-bahasa
-│   │   ├── 📄 sitemap.ts           # 623 URL otomatis
+│   │   ├── 📄 sitemap.ts           # 618 URL otomatis
 │   │   └── 📄 robots.ts            # robots.txt dinamis
 │   ├── 📁 components/
 │   │   ├── 📁 berkat/              # 21 komponen homepage (Hero, Catalog, Footer…)
@@ -405,7 +406,7 @@ PGlite data hidup di `db/pglite-data/`. Jika rusak/kosong: jalankan `bun scripts
 <details>
 <summary><b>🖼️ "Gambar 404 setelah deploy"</b></summary>
 
-Pastikan folder `public/` (termasuk `public/images/products/kompresor/` — 512 file) ikut ter-deploy. Verifikasi lokal: `bun run build && bun run start` lalu buka `http://localhost:3000/produk`.
+Pastikan folder `public/` (termasuk `public/images/products/kompresor/` — 530 file) ikut ter-deploy. Verifikasi lokal: `bun run build && bun run start` lalu buka `http://localhost:3000/produk`.
 </details>
 
 <details>
@@ -465,12 +466,12 @@ Kode & desain: lisensi MIT.
 
 ### The Largest HVAC Compressor Catalog Ever Built with Next.js
 
-**PT Berkat Mandiri Pendingin** — Indonesia's official HVAC distributor since 2010 (MM2100 Industrial Estate, Bekasi). A full-stack Next.js 16 marketing machine: **620 products** across **25 global brands**, powered by an embedded **PGlite (PostgreSQL WASM)** database, a complete **Admin CMS**, **512 unique AI-assisted product images**, and a five-layer structured-data SEO arsenal targeting **#1 on Google**.
+**PT Berkat Mandiri Pendingin** — Indonesia's official HVAC distributor since 2010 (MM2100 Industrial Estate, Bekasi). A full-stack Next.js 16 marketing machine: **614 products** across **25 global brands**, powered by an embedded **PGlite (PostgreSQL WASM)** database, a complete **Admin CMS**, **530 unique AI-assisted product images**, and a five-layer structured-data SEO arsenal targeting **#1 on Google**.
 
 #### Highlights
-- 🛒 **620-product catalog** — 558 compressors in 9 families (rotary, twin-rotary, DC inverter, scroll, piston, semi-hermetic, screw, condensing units) across 19 categories
-- 💚 **SEO total** — JSON-LD ×5 (Organization, LocalBusiness, WebSite, Product+Offer+FAQPage, BreadcrumbList), auto sitemap with **623 URLs**, dynamic robots.txt, `llms.txt` for AI search engines
-- 🖼️ **512 unique images** — 12 AI-generated studio photos + 500 branded derivatives via `sharp` (webp 800×800)
+- 🛒 **614-product catalog** — 548 compressors in 9 families (rotary, twin-rotary, DC inverter, scroll, piston, semi-hermetic, screw, condensing units) across 19 categories
+- 💚 **SEO total** — JSON-LD ×5 (Organization, LocalBusiness, WebSite, Product+Offer+FAQPage, BreadcrumbList), auto sitemap with **618 URLs**, dynamic robots.txt, `llms.txt` for AI search engines
+- 🖼️ **530 unique images** — 12 AI-generated studio photos + 500 branded derivatives via `sharp` (webp 800×800)
 - 🎛️ **Admin CMS** — products, articles, SEO guide, image intelligence, database backups at `/admin`
 - 🌏 **Bilingual ID/EN** — 320+ translation keys, persistent preference
 - 🛡️ **Asset totality guarantee** — `bun run check:assets` blocks any release with missing images (exit code 1)
@@ -484,7 +485,7 @@ bun run build && bun run start   # production build + serve
 ```
 
 #### Architecture in One Paragraph
-Visitors get a fully interactive catalog (instant filtering, cart → WhatsApp ordering, bilingual UI). The Next.js 16 server reads from **PGlite** — a complete PostgreSQL compiled to WebAssembly, embedded in the app with persistent data in `db/pglite-data/`: **no external database server, no credentials, no setup**. Legacy seed data (120 products) ships in SQLite via Prisma; the catalog was scaled to 620 products by `scripts/generate-compressor-catalog.ts`, which also generated 500 unique SEO descriptions and 500 unique branded images.
+Visitors get a fully interactive catalog (instant filtering, cart → WhatsApp ordering, bilingual UI). The Next.js 16 server reads from **PGlite** — a complete PostgreSQL compiled to WebAssembly, embedded in the app with persistent data in `db/pglite-data/`: **no external database server, no credentials, no setup**. Legacy seed data (120 products) ships in SQLite via Prisma; the catalog was scaled to 614 products by `scripts/generate-compressor-catalog.ts`, which also generated 500 unique SEO descriptions and 500 unique branded images.
 
 #### Deployment (honest guide)
 Production requires a Node.js runtime (PGlite writes to disk). **Recommended:** VPS + Nginx reverse proxy + PM2 (see the Indonesian section above for the complete config). Works on Vercel/Netlify with storage considerations, and on cPanel's Node.js App feature. Daily content updates need **no redeploy** — manage everything from the Admin CMS.

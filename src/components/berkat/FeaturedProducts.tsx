@@ -8,7 +8,7 @@ import { ArrowRight, ShoppingCart, Eye, Zap, Snowflake, MessageCircle } from 'lu
 import Image from 'next/image';
 import { useCartStore } from '@/stores/cart-store';
 import { toast } from 'sonner';
-import { formatRupiah } from '@/lib/format';
+
 import { useT, type DictKey } from '@/lib/i18n';
 
 type Product = {
@@ -155,11 +155,6 @@ export function FeaturedProducts({ products, onProductClick }: Props) {
                           {t('catalog.badge.new')}
                         </Badge>
                       )}
-                      {product.originalPrice && product.originalPrice > product.price && (
-                        <Badge className="bg-red-600 text-white text-[10px] px-2 font-semibold">
-                          -{Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}%
-                        </Badge>
-                      )}
                     </div>
                     {/* Hover overlay */}
                     <div className="absolute inset-0 flex items-end justify-center pb-6 z-10">
@@ -197,15 +192,17 @@ export function FeaturedProducts({ products, onProductClick }: Props) {
                     <h3 className="font-semibold text-sm text-gray-900 line-clamp-2 mb-2 group-hover:text-teal-700 transition-colors">
                       {product.name}
                     </h3>
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-base font-bold text-teal-800">
-                        {product.price > 0 ? formatRupiah(product.price) : 'Harga melalui penawaran'}
-                      </span>
-                      {product.originalPrice && product.originalPrice > product.price && (
-                        <span className="text-xs text-red-500 line-through font-medium">
-                          {formatRupiah(product.originalPrice)}
-                        </span>
-                      )}
+                    <div className="flex items-center justify-between gap-2">
+                      <a
+                        href={`https://wa.me/6281350003423?text=${encodeURIComponent(`Halo, saya ingin tanya harga untuk *${product.name}* (${product.brand ?? ''}). Mohon info harga terbaik dan stoknya.`)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="inline-flex items-center gap-1.5 rounded-md bg-emerald-600 px-2.5 py-1.5 text-[11px] font-bold text-white shadow-sm transition hover:bg-emerald-700"
+                      >
+                        <MessageCircle className="h-3 w-3" />
+                        Tanya Harga
+                      </a>
                     </div>
                   </CardContent>
                 </Card>

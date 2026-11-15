@@ -131,7 +131,6 @@ export async function createQuote(
     company: customer.company,
     city: customer.city,
     needType: 'quote',
-    estimate: totalEstimate,
     needInstallation,
     notes: customer.note,
     source: 'quote',
@@ -146,12 +145,10 @@ export async function createQuote(
     `Nama: ${customer.name || 'Customer Website'}\n` +
     (customer.company ? `Perusahaan: ${customer.company}\n` : '') +
     (customer.city ? `Lokasi proyek: ${customer.city}\n` : '') +
-    `\nRincian quote:\n${itemLines}\n\n` +
-    `Subtotal: ${new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(subtotal)}\n` +
-    (needInstallation ? `Estimasi instalasi: ${new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(installationFee)}\n` : '') +
-    `Total estimasi: ${new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(totalEstimate)}\n` +
+    `\nRincian permintaan:\n${itemLines}\n\n` +
+    (needInstallation ? `Jasa instalasi: diminta (mohon ikutkan dalam penawaran)\n` : '') +
     (customer.note ? `Catatan: ${customer.note}\n` : '') +
-    `\nMohon konfirmasi harga final dan ketersediaannya. Terima kasih.`;
+    `\nMohon susun penawaran harga resmi dan konfirmasi ketersediaannya. Terima kasih.`;
 
   return {
     id,

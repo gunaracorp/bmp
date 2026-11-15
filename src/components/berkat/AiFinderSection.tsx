@@ -32,7 +32,7 @@ export function AiFinderSection() {
             </h2>
             <p className="mt-4 max-w-lg text-sm leading-relaxed text-teal-100 sm:text-base">
               Jawab 5 pertanyaan tentang aplikasi, kapasitas, dan refrigeran — dapatkan 3–5 rekomendasi
-              kompresor paling cocok lengkap dengan estimasi harga distributor, lalu kirim quote langsung
+              kompresor paling cocok, lalu minta penawaran harga langsung
               ke WhatsApp sales.
             </p>
             <div className="mt-7 flex flex-wrap gap-3">

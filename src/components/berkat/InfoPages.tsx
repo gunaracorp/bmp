@@ -513,8 +513,8 @@ function TermsPage({ lang }: { lang: 'id' | 'en' }) {
         <p>
           {L(
             {
-              id: 'Harga yang tercantum adalah harga indikatif dan dapat berubah mengikuti harga distributor resmi tanpa pemberitahuan. Penawaran formal (quotation) berlaku 7 hari kalender sejak diterbitkan, kecuali dinyatakan lain.',
-              en: 'Listed prices are indicative and may change following official distributor pricing without notice. Formal quotations are valid for 7 calendar days from issuance unless stated otherwise.',
+              id: 'Website ini tidak menampilkan harga produk. Seluruh permintaan harga diinformasikan langsung melalui WhatsApp tim sales sesuai kebutuhan, jumlah, dan lokasi proyek. Penawaran formal (quotation) berlaku 7 hari kalender sejak diterbitkan, kecuali dinyatakan lain.',
+              en: 'This website does not display product prices. All pricing is provided directly via WhatsApp by our sales team based on your needs, quantity, and project location. Formal quotations are valid for 7 calendar days from issuance unless stated otherwise.',
             },
             lang
           )}

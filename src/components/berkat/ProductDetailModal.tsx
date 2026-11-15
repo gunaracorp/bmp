@@ -26,7 +26,6 @@ import {
 import Image from 'next/image';
 import { useCartStore } from '@/stores/cart-store';
 import { toast } from 'sonner';
-import { formatRupiah } from '@/lib/format';
 import { NoSSR } from '@/components/ui/no-ssr';
 import { useT, type DictKey } from '@/lib/i18n';
 
@@ -128,8 +127,7 @@ export function ProductDetailModal({ product, open, onClose }: Props) {
   };
 
   const handleWhatsApp = () => {
-    const priceLine = product.price > 0 ? `Harga: ${formatRupiah(product.price)}\n` : '';
-    const msg = `Halo, saya tertarik dengan produk:\n\n*${product.name}*\n${priceLine}Jumlah: ${qty} ${product.unit}\n\nMohon konfirmasi harga, stok, dan kecocokan aplikasi. Terima kasih!`;
+    const msg = `Halo, saya tertarik dengan produk:\n\n*${product.name}*\nJumlah: ${qty} ${product.unit}\n\nMohon info harga terbaik, stok, dan kecocokan aplikasi. Terima kasih!`;
     window.open(
       `https://wa.me/6281350003423?text=${encodeURIComponent(msg)}`,
       '_blank'
@@ -205,18 +203,19 @@ export function ProductDetailModal({ product, open, onClose }: Props) {
                 </motion.div>
               </DialogHeader>
 
-              {/* Price */}
+              {/* Price — kebijakan harga via WhatsApp */}
               <motion.div variants={infoItemVariants} className="mb-4">
-                <div className="flex items-baseline gap-3">
-                  <span className="text-2xl font-extrabold text-teal-800">
-                    {product.price > 0 ? formatRupiah(product.price) : 'Harga melalui penawaran'}
-                  </span>
-                  {product.originalPrice && product.originalPrice > product.price && (
-                    <span className="text-sm text-red-500 line-through font-medium">
-                      {formatRupiah(product.originalPrice)}
-                    </span>
-                  )}
-                </div>
+                <a
+                  href={`https://wa.me/6281350003423?text=${encodeURIComponent(`Halo, saya ingin tanya harga untuk *${product.name}*. Mohon info harga terbaik dan ketersediaan stoknya.`)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-emerald-700"
+                >
+                  Tanya Harga via WhatsApp
+                </a>
+                <p className="text-xs text-gray-600 mt-1.5 font-medium">
+                  Harga penawaran sesuai kebutuhan — tanpa harga pasaran di website.
+                </p>
                 <p className="text-xs text-gray-600 mt-1 font-medium">
                   Min. order: {product.minOrder} {product.unit}
                 </p>

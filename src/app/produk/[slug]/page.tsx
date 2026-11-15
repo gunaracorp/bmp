@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation';
 import { ArrowLeft, ArrowUpRight, BadgeCheck, MessageCircle, PackageCheck, ShieldCheck, Truck } from 'lucide-react';
 import { getProductDetails, getCatalogProductsByCategory } from '@/lib/cms-db';
 import { Button } from '@/components/ui/button';
-import { formatRupiah as formatIDR } from '@/lib/format';
+import { buildPriceInquiryUrl, isPricingPublic } from '@/lib/pricing';
 import { ProductQuoteButton } from '@/components/berkat/ProductQuoteButton';
 import { WhatsAppLeadButton } from '@/components/berkat/WhatsAppLeadButton';
 
@@ -32,6 +32,13 @@ const specLabels: Record<string, string> = {
   kemasan: 'Kondisi',
   displacement: 'Perpindahan volume',
   displacement_m3_h: 'Perpindahan (m³/jam)',
+  silinder: 'Jumlah silinder',
+  bore_stroke: 'Silinder × bore × langkah',
+  berat: 'Bobot unit',
+  tekanan_maks: 'Tekanan maksimum (LP/HP)',
+  kecepatan: 'Rentang kecepatan kerja',
+  sambungan: 'Sambungan / coupling',
+  dimensi: 'Dimensi (P×L×T)',
   displacement_cm3_rev: 'Perpindahan (cm³/putaran)',
   application: 'Aplikasi',
   test_application: 'Aplikasi pengujian',
@@ -122,9 +129,17 @@ export default async function ProductDetailPage({ params }: RouteProps) {
   const displaySpecs = Object.entries(specs).filter(([key, value]) => !key.startsWith('_') && typeof value === 'string');
   const { title, description, typeLabel } = productMeta(product, category.name);
   const canonicalUrl = `${SITE_URL}/produk/${product.slug}`;
+  const pricingPublic = isPricingPublic();
+  const priceInquiryUrl = buildPriceInquiryUrl({
+    name: product.name,
+    brand: product.brand,
+    model: product.model,
+    slug: product.slug,
+    siteUrl: SITE_URL,
+  });
   const quoteMessage = `Halo, saya ingin menanyakan harga dan ketersediaan ${product.brand || ''} ${product.model || product.name}. Mohon bantu cek kecocokan produk ini untuk kebutuhan saya.`;
 
-  const hasDiscount = Boolean(product.originalPrice && product.originalPrice > product.price);
+  const hasDiscount = pricingPublic && Boolean(product.originalPrice && product.price > 0 && product.originalPrice > product.price);
   const discountPct = hasDiscount && product.originalPrice
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
     : 0;
@@ -148,17 +163,22 @@ export default async function ProductDetailPage({ params }: RouteProps) {
           name: specLabels[name] || name.replaceAll('_', ' '),
           value,
         })),
-        offers: {
-          '@type': 'Offer',
-          url: canonicalUrl,
-          priceCurrency: 'IDR',
-          price: product.price,
-          itemCondition: 'https://schema.org/NewCondition',
-          availability: product.inStock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
-          seller: { '@type': 'Organization', name: 'PT Berkat Mandiri Pendingin', url: SITE_URL },
-          areaServed: 'ID',
-          priceValidUntil: `${new Date().getFullYear() + 1}-12-31`,
-        },
+        // Kebijakan harga via WhatsApp — tanpa offer numerik (tetap valid untuk Google)
+        ...(pricingPublic && product.price > 0
+          ? {
+              offers: {
+                '@type': 'Offer',
+                url: canonicalUrl,
+                priceCurrency: 'IDR',
+                price: product.price,
+                itemCondition: 'https://schema.org/NewCondition',
+                availability: product.inStock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+                seller: { '@type': 'Organization', name: 'PT Berkat Mandiri Pendingin', url: SITE_URL },
+                areaServed: 'ID',
+                priceValidUntil: `${new Date().getFullYear() + 1}-12-31`,
+              },
+            }
+          : {}),
       },
       {
         '@type': 'BreadcrumbList',
@@ -177,7 +197,7 @@ export default async function ProductDetailPage({ params }: RouteProps) {
             name: `Berapa harga ${typeLabel.toLowerCase()} ${product.brand || ''} ${product.model || ''}?`.replace(/\s+/g, ' ').trim(),
             acceptedAnswer: {
               '@type': 'Answer',
-              text: `Harga ${product.name} mulai dari ${formatIDR(product.price)} untuk pembelian distributor. Harga spesial tersedia untuk proyek dan pembelian volume — hubungi tim sales untuk penawaran resmi.`,
+              text: `Harga ${product.name} diinformasikan langsung melalui WhatsApp tim sales PT Berkat Mandiri Pendingin (0813-5000-3423) sesuai kebutuhan, jumlah, dan lokasi proyek Anda — tanpa menampilkan harga pasaran di website. Penawaran spesial tersedia untuk kontraktor dan pembelian volume.`,
             },
           },
           {
@@ -230,18 +250,27 @@ export default async function ProductDetailPage({ params }: RouteProps) {
               <p className="mt-3 text-sm leading-6 text-slate-600">{product.description || product.shortDesc}</p>
             </div>
 
-            <div className="rounded-2xl border border-teal-100 bg-teal-50 p-4">
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                <span className="text-2xl font-bold text-teal-950">{formatIDR(product.price)}</span>
-                {hasDiscount && (
-                  <>
-                    <span className="text-sm text-slate-500 line-through">{formatIDR(product.originalPrice!)}</span>
-                    <span className="rounded-full bg-teal-900 px-2 py-0.5 text-xs font-semibold text-white">Hemat {discountPct}%</span>
-                  </>
-                )}
+            {!pricingPublic ? (
+              <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
+                <p className="text-sm font-semibold text-emerald-900">Harga diinformasikan langsung via WhatsApp</p>
+                <p className="mt-1 text-sm leading-5 text-emerald-800">
+                  Kami tidak menampilkan harga di website — setiap penawaran dihitung sesuai kebutuhan, jumlah, dan lokasi proyek Anda. Klik tombol WhatsApp di bawah untuk harga terbaik hari ini.
+                </p>
               </div>
-              <p className="mt-1 text-sm leading-5 text-teal-900">Harga distributor spesial untuk kontraktor & volume besar. Konfirmasikan stok, kelistrikan, dan kecocokan aplikasi kepada tim sebelum pemesanan.</p>
-            </div>
+            ) : (
+              <div className="rounded-2xl border border-teal-100 bg-teal-50 p-4">
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                  <span className="text-2xl font-bold text-teal-950">{product.price > 0 ? `Rp ${product.price.toLocaleString('id-ID')}` : 'Harga melalui penawaran'}</span>
+                  {hasDiscount && (
+                    <>
+                      <span className="text-sm text-slate-500 line-through">Rp {product.originalPrice!.toLocaleString('id-ID')}</span>
+                      <span className="rounded-full bg-teal-900 px-2 py-0.5 text-xs font-semibold text-white">Hemat {discountPct}%</span>
+                    </>
+                  )}
+                </div>
+                <p className="mt-1 text-sm leading-5 text-teal-900">Harga distributor spesial untuk kontraktor & volume besar. Konfirmasikan stok, kelistrikan, dan kecocokan aplikasi kepada tim sebelum pemesanan.</p>
+              </div>
+            )}
 
             <ul className="grid grid-cols-1 gap-2 text-sm text-slate-700 sm:grid-cols-2">
               <li className="flex items-center gap-2"><BadgeCheck aria-hidden="true" className="size-4 text-teal-700" /> 100% Original Distributor Resmi</li>
@@ -272,9 +301,9 @@ export default async function ProductDetailPage({ params }: RouteProps) {
             )}
 
             <div className="mt-auto flex flex-col gap-3 sm:flex-row">
-              <Button asChild className="h-12 flex-1 bg-teal-900 text-white hover:bg-teal-800">
-                <a href={`https://wa.me/6281350003423?text=${encodeURIComponent(quoteMessage)}`} target="_blank" rel="noopener noreferrer">
-                  <MessageCircle data-icon="inline-start" /> Tanyakan harga & stok
+              <Button asChild className="h-12 flex-1 bg-emerald-600 text-white hover:bg-emerald-700">
+                <a href={priceInquiryUrl} target="_blank" rel="noopener noreferrer">
+                  <MessageCircle data-icon="inline-start" /> Tanya Harga via WhatsApp
                 </a>
               </Button>
               <Button asChild variant="outline" className="h-12 border-slate-300">
@@ -297,7 +326,6 @@ export default async function ProductDetailPage({ params }: RouteProps) {
                 source="product"
                 productId={product.id}
                 productName={product.name}
-                estimate={product.price}
                 label="Tanya sales"
                 className="h-12 flex-1"
               />
@@ -332,7 +360,7 @@ export default async function ProductDetailPage({ params }: RouteProps) {
                   </div>
                   <div className="flex flex-1 flex-col gap-1 border-t border-slate-100 p-3">
                     <p className="line-clamp-2 text-xs font-medium leading-4 text-slate-800">{item.name}</p>
-                    <p className="mt-auto text-xs font-semibold text-teal-800">{formatIDR(item.price)}</p>
+                    <p className="mt-auto text-xs font-semibold text-emerald-700">Tanya Harga via WhatsApp</p>
                   </div>
                 </Link>
               ))}

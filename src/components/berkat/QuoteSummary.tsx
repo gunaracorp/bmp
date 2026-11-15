@@ -5,8 +5,6 @@
  * total, status ketersediaan, dan CTA kirim ke WhatsApp.
  */
 import { CheckCircle2, Clock3, Package, Truck } from 'lucide-react';
-import { formatRupiah } from '@/lib/format';
-import { estimateInstallationFee } from '@/lib/quote-math';
 import { WhatsAppLeadButton } from './WhatsAppLeadButton';
 
 export type QuoteSummaryItem = {
@@ -22,9 +20,6 @@ export type QuoteSummaryItem = {
 export type QuoteSummaryProps = {
   items: QuoteSummaryItem[];
   needInstallation: boolean;
-  subtotal: number;
-  installationFee?: number;
-  totalEstimate: number;
   quoteId?: string;
   /** Mode read-only untuk halaman /quote/[id] (sudah tersimpan). */
   saved?: boolean;
@@ -36,17 +31,12 @@ export type QuoteSummaryProps = {
 export function QuoteSummary({
   items,
   needInstallation,
-  subtotal,
-  installationFee,
-  totalEstimate,
   quoteId,
   saved = false,
   createdAt,
   customer,
   projectNote,
 }: QuoteSummaryProps) {
-  const fee = needInstallation ? (installationFee ?? estimateInstallationFee(subtotal)) : 0;
-
   return (
     <div className="rounded-3xl border border-slate-200 bg-white shadow-sm">
       <div className="border-b border-slate-100 p-5">
@@ -74,33 +64,29 @@ export function QuoteSummary({
                 ) : item.productName}
               </p>
               <p className="text-xs text-slate-500">
-                {item.brand ? `${item.brand} · ` : ''}{item.quantity} unit × {formatRupiah(item.unitPrice)}
+                {item.brand ? `${item.brand} · ` : ''}{item.quantity} unit
               </p>
               {item.note ? <p className="mt-1 rounded-lg bg-slate-50 px-2 py-1 text-[11px] text-slate-600">{item.note}</p> : null}
             </div>
-            <p className="shrink-0 text-sm font-bold text-slate-900">{formatRupiah(item.unitPrice * item.quantity)}</p>
+            <p className="shrink-0 text-xs font-semibold text-emerald-700">Harga via WA</p>
           </li>
         ))}
       </ul>
 
       <div className="space-y-2.5 border-t border-slate-100 p-5 text-sm">
         <div className="flex justify-between text-slate-600">
-          <span>Subtotal produk</span>
-          <span className="font-semibold text-slate-900">{formatRupiah(subtotal)}</span>
+          <span>Jumlah item</span>
+          <span className="font-semibold text-slate-900">{items.length} produk · {items.reduce((s, i) => s + i.quantity, 0)} unit</span>
         </div>
         {needInstallation ? (
           <div className="flex justify-between text-slate-600">
-            <span>Estimasi jasa instalasi</span>
-            <span className="font-semibold text-slate-900">{formatRupiah(fee)}</span>
+            <span>Jasa instalasi</span>
+            <span className="font-semibold text-slate-900">Diminta — dihitung sales</span>
           </div>
         ) : null}
-        <div className="flex justify-between border-t border-dashed border-slate-200 pt-2.5 text-base">
-          <span className="font-bold text-slate-900">Total estimasi</span>
-          <span className="font-extrabold text-teal-800">{formatRupiah(totalEstimate)}</span>
+        <div className="rounded-lg bg-emerald-50 border border-emerald-100 p-3 text-xs leading-relaxed text-emerald-900">
+          Harga tidak ditampilkan di website. Kirim quote ini ke WhatsApp — penawaran resmi (termasuk harga unit &amp; instalasi) disusun tim kami sesuai volume dan lokasi proyek.
         </div>
-        <p className="text-[11px] leading-relaxed text-slate-500">
-          Estimasi harga distributor — harga final dikonfirmasi sales sesuai volume & lokasi pengiriman.
-        </p>
       </div>
 
       {customer?.name || customer?.company || customer?.city || projectNote ? (
@@ -123,8 +109,7 @@ export function QuoteSummary({
           source="quote"
           quoteId={quoteId}
           quotePayload={{
-            items: items.map((item) => ({ productName: item.productName, quantity: item.quantity, unitPrice: item.unitPrice })),
-            totalEstimate,
+            items: items.map((item) => ({ productName: item.productName, quantity: item.quantity })),
             customer: { name: customer?.name ?? undefined, company: customer?.company ?? undefined, city: customer?.city ?? undefined },
             needInstallation,
             note: projectNote ?? undefined,

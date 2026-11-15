@@ -12,7 +12,6 @@ import {
   ArrowRight, BadgeCheck, Check, GitCompareArrows, Loader2,
   PlusCircle, Sparkles, Thermometer, Zap,
 } from 'lucide-react';
-import { formatRupiah } from '@/lib/format';
 import { useQuoteStore } from '@/stores/quote-store';
 import { addToCompare } from './finder-types';
 import { WhatsAppLeadButton } from './WhatsAppLeadButton';
@@ -101,7 +100,16 @@ function RecommendationCard({ item, index }: { item: FinderResultItem; index: nu
             <Link href={`/produk/${item.slug}`} className="transition hover:text-teal-800">{item.name}</Link>
           </h3>
           <p className="mt-0.5 text-xs font-medium text-slate-500">{item.brand} · {item.category}</p>
-          <p className="mt-2 text-lg font-bold text-teal-800">{formatRupiah(item.price)}<span className="text-xs font-medium text-slate-500"> /unit</span></p>
+          <p className="mt-2 inline-flex items-center gap-1.5 rounded-md bg-emerald-600 px-2.5 py-1.5 text-xs font-bold text-white shadow-sm transition hover:bg-emerald-700" aria-hidden="false">
+            <a
+              href={`https://wa.me/6281350003423?text=${encodeURIComponent(`Halo, saya ingin tanya harga untuk *${item.name}* (${item.brand}). Mohon info harga terbaik dan stoknya.`)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5"
+            >
+              Tanya Harga via WhatsApp
+            </a>
+          </p>
         </div>
 
         {/* Skor */}
@@ -147,7 +155,6 @@ function RecommendationCard({ item, index }: { item: FinderResultItem; index: nu
           variant="compact"
           productName={item.name}
           productId={item.productId}
-          estimate={item.price}
           source="ai-finder"
         />
         <button

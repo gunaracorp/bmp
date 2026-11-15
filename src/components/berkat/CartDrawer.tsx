@@ -28,7 +28,6 @@ import {
 import Image from 'next/image';
 import { useCartStore, type CartItem } from '@/stores/cart-store';
 import { toast } from 'sonner';
-import { formatRupiah } from '@/lib/format';
 import { NoSSR } from '@/components/ui/no-ssr';
 import { useT } from '@/lib/i18n';
 
@@ -52,22 +51,19 @@ const cartItemVariants = {
 
 export function CartDrawer() {
   const t = useT();
-  const { items, isOpen, closeCart, removeItem, updateQuantity, clearCart, getTotal, getTotalItems } =
+  const { items, isOpen, closeCart, removeItem, updateQuantity, clearCart, getTotalItems } =
     useCartStore();
   const [showInquiry, setShowInquiry] = useState(false);
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
   const [form, setForm] = useState({ name: '', email: '', phone: '', company: '', message: '' });
 
-  const total = getTotal();
   const count = getTotalItems();
 
   const handleWhatsAppOrder = () => {
     if (items.length === 0) return;
-    const lines = items.map(
-      (item) => `\u2022 ${item.name} x${item.quantity} = ${formatRupiah(item.price * item.quantity)}`
-    );
-    const msg = `Halo, saya ingin memesan:\n\n${lines.join('\n')}\n\nTotal: ${formatRupiah(total)}\n\nMohon info ketersediaan dan ongkos kirim. Terima kasih!`;
+    const lines = items.map((item) => `\u2022 ${item.name} x${item.quantity}`);
+    const msg = `Halo, saya ingin *minta penawaran harga* untuk daftar berikut:\n\n${lines.join('\n')}\n\nMohon info harga terbaik, ketersediaan, dan ongkos kirim. Terima kasih!`;
     window.open(`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
   };
 
@@ -81,7 +77,7 @@ export function CartDrawer() {
     // Send inquiry via WhatsApp — no server needed!
     try {
       const orderLines = items.map(
-        (item) => `  \u2022 ${item.name} x${item.quantity} = ${formatRupiah(item.price * item.quantity)}`
+        (item) => `  \u2022 ${item.name} x${item.quantity}`
       );
 
       const lines = [
@@ -92,13 +88,12 @@ export function CartDrawer() {
         `*Telepon:* ${form.phone}`,
         form.company ? `*Perusahaan:* ${form.company}` : '',
         ``,
-        `*Pesanan:*`,
+        `*Daftar Permintaan:*`,
         ...orderLines,
         ``,
-        `*Total Estimasi:* ${formatRupiah(total)}`,
         form.message ? `*Catatan:* ${form.message}` : '',
         ``,
-        `Mohon info ketersediaan dan harga terbaik. Terima kasih!`,
+        `Mohon info harga terbaik dan ketersediaan. Terima kasih!`,
       ].filter(Boolean).join('\n');
 
       window.open(
@@ -187,20 +182,17 @@ export function CartDrawer() {
                 />
               </div>
 
-              {/* Order summary in inquiry */}
+              {/* Order summary in inquiry — mode RFQ tanpa harga */}
               <div className="bg-gray-50 rounded-lg p-3">
-                <h4 className="text-xs font-semibold text-gray-800 mb-2">{t('cart.subtotal')} Pesanan</h4>
+                <h4 className="text-xs font-semibold text-gray-800 mb-2">Daftar Permintaan</h4>
                 {items.map((item) => (
                   <div key={item.id} className="flex justify-between text-xs text-gray-700 py-1">
-                    <span className="flex-1 truncate mr-2">{item.name} x{item.quantity}</span>
-                    <span className="text-gray-900 font-medium">{formatRupiah(item.price * item.quantity)}</span>
+                    <span className="flex-1 truncate mr-2">{item.name}</span>
+                    <span className="text-gray-900 font-medium">x{item.quantity}</span>
                   </div>
                 ))}
                 <Separator className="my-2" />
-                <div className="flex justify-between text-sm font-bold">
-                  <span className="text-gray-900">{t('cart.total')}</span>
-                  <span className="text-teal-800">{formatRupiah(total)}</span>
-                </div>
+                <p className="text-xs text-emerald-700 font-medium">Harga dikonfirmasi oleh tim sales via WhatsApp.</p>
               </div>
             </div>
             <div className="p-4 border-t flex gap-2">
@@ -289,13 +281,8 @@ export function CartDrawer() {
                   transition={{ delay: 0.1, duration: 0.3 }}
                   className="border-t p-4 space-y-3"
                 >
-                  <div className="flex justify-between text-sm text-gray-600">
-                    <span>{t('cart.subtotal')} ({count} {t('cart.item')})</span>
-                    <span className="text-gray-900">{formatRupiah(total)}</span>
-                  </div>
-                  <div className="flex justify-between text-lg font-bold">
-                    <span className="text-gray-900">{t('cart.total')}</span>
-                    <span className="text-teal-800">{formatRupiah(total)}</span>
+                  <div className="rounded-lg bg-emerald-50 border border-emerald-100 p-3 text-xs leading-relaxed text-emerald-900">
+                    Harga tidak ditampilkan — daftar ini dikirim ke WhatsApp dan tim kami langsung menghitung penawaran terbaik untuk Anda.
                   </div>
                   <div className="grid grid-cols-2 gap-2">
                     <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
@@ -396,9 +383,7 @@ function CartItemRow({
               <Plus className="h-3 w-3" />
             </button>
           </div>
-          <span className="text-sm font-bold text-teal-800">
-            {formatRupiah(item.price * item.quantity)}
-          </span>
+          <span className="text-xs font-semibold text-emerald-700">Harga via WA</span>
         </div>
       </div>
     </motion.div>

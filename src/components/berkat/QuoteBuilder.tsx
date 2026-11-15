@@ -4,15 +4,13 @@
  * QuoteBuilder — keranjang quote B2B: ubah qty, catatan per item, kebutuhan
  * instalasi, data proyek → buat quote persisten → ringkasan + kirim WA.
  */
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   ClipboardList, FileText, Loader2, Minus, Plus, ShoppingBag,
   Trash2, Wrench,
 } from 'lucide-react';
-import { formatRupiah } from '@/lib/format';
-import { estimateInstallationFee } from '@/lib/quote-math';
 import { useQuoteStore } from '@/stores/quote-store';
 import { QuoteSummary } from './QuoteSummary';
 import { getOrCreateSessionId } from './ProductFinderForm';
@@ -56,10 +54,6 @@ export function QuoteBuilder() {
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState('');
   const [createdQuote, setCreatedQuote] = useState<CreatedQuoteView | null>(null);
-
-  const subtotal = useMemo(() => items.reduce((sum, item) => sum + item.price * item.quantity, 0), [items]);
-  const installationFee = needInstallation ? estimateInstallationFee(subtotal) : 0;
-  const totalEstimate = subtotal + installationFee;
 
   async function createQuote() {
     if (items.length === 0) return;
@@ -140,9 +134,6 @@ export function QuoteBuilder() {
             createdAt={createdQuote.createdAt}
             items={createdQuote.items.map((item) => ({ ...item }))}
             needInstallation={createdQuote.needInstallation}
-            subtotal={createdQuote.subtotal}
-            installationFee={createdQuote.installationFee}
-            totalEstimate={createdQuote.totalEstimate}
             customer={createdQuote.customer}
             projectNote={createdQuote.projectNote}
           />
@@ -202,7 +193,7 @@ export function QuoteBuilder() {
                       <p className="truncate text-sm font-bold text-slate-900">
                         {item.slug ? <Link href={`/produk/${item.slug}`} className="transition hover:text-teal-800">{item.name}</Link> : item.name}
                       </p>
-                      <p className="text-xs text-slate-500">{item.brand ? `${item.brand} · ` : ''}{formatRupiah(item.price)} /unit</p>
+                      <p className="text-xs text-slate-500">{item.brand ? `${item.brand} · ` : ''}Harga via penawaran WhatsApp</p>
                       <input
                         type="text"
                         value={item.note ?? ''}
@@ -231,7 +222,7 @@ export function QuoteBuilder() {
                           <Plus className="size-4" />
                         </button>
                       </div>
-                      <div className="w-24 text-right text-sm font-bold text-slate-900">{formatRupiah(item.price * item.quantity)}</div>
+                      <div className="text-right text-xs font-semibold text-emerald-700">Harga<br />via WA</div>
                       <button
                         type="button"
                         onClick={() => removeItem(item.productId)}
@@ -264,7 +255,7 @@ export function QuoteBuilder() {
                 />
                 <span className="flex items-center gap-2 text-sm font-semibold text-slate-800">
                   <Wrench className="size-4 text-teal-700" aria-hidden="true" />
-                  Butuh jasa instalasi (+12%, min Rp 1,5 jt)
+                  Butuh jasa instalasi (dihitung dalam penawaran)
                 </span>
               </label>
               <div className="grid gap-4 sm:grid-cols-2">
@@ -307,9 +298,6 @@ export function QuoteBuilder() {
             note: item.note,
           }))}
           needInstallation={needInstallation}
-          subtotal={subtotal}
-          installationFee={installationFee}
-          totalEstimate={totalEstimate}
           customer={{ name: customerName, company: companyName, city }}
           projectNote={projectNote}
         />

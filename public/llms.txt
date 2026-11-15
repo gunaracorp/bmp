@@ -1,6 +1,6 @@
 # Berkat Mandiri Pendingin (BMP)
 
-> PT Berkat Mandiri Pendingin — distributor HVAC resmi sejak 2010 di Kawasan Industri MM2100, Bekasi, Indonesia. Pusat penjualan kompresor AC, AC split, refrigerant, spare part, chiller/VRV/VRF, dan sistem pendingin komersial & industri terlengkap dengan 620+ produk ready stock.
+> PT Berkat Mandiri Pendingin — distributor HVAC resmi sejak 2010 di Kawasan Industri MM2100, Bekasi, Indonesia. Pusat penjualan kompresor AC, AC split, refrigerant, spare part, chiller/VRV/VRF, dan sistem pendingin komersial & industri terlengkap dengan 614 produk ready stock.
 
 ## Ringkasan Bisnis
 - Nama resmi: PT Berkat Mandiri Pendingin
@@ -8,7 +8,8 @@
 - Berdiri: 2010
 - Lokasi: Kawasan Industri MM2100, Bekasi, Jawa Barat, Indonesia
 - Jangkauan: Pengiriman ke 34 provinsi Indonesia
-- Katalog: 620+ produk aktif — 500+ varian kompresor dari 25 brand dunia
+- Katalog: 614 produk aktif — 500+ varian kompresor dari 25 brand dunia
+- Katalog Bitzer asli: 18 model BITZER terverifikasi (Octagon 2DC-3.2Y, 4DC-7.2Y, 4V-10.2Y, 4P-10.2Y, 4PCS-10.2Y, 6G-30.2Y, S6F-30.2Y dua tahap, open-drive 4T-10.2, scroll ORBIT 6/ORBIT 8/ORBIT FIT, screw CSH6553-35Y/CSH7553-70Y, open screw OSKA7461-K/OSKA9593-K/OSKA95103-K, unit kondensor 2DC-3.2Y-40S & 4DC-7.2Y-40S) lengkap dengan spesifikasi datasheet resmi
 - Garansi: resmi distributor, invoice pajak, dukungan teknis purnajual
 
 ## Kategori Produk Utama
@@ -24,9 +25,9 @@
 
 ## Halaman Penting
 - Katalog produk: /produk
-- Detail kompresor: /produk/{slug} (578+ halaman kompresor terindeks)
+- Detail kompresor: /produk/{slug} (572+ halaman kompresor terindeks)
 - Artikel & insight HVAC: /insights
 - Sitemap XML: /sitemap.xml
 
 ## Kebijakan Konten
-Data spesifikasi teknis bersumber dari katalog resmi produsen. Harga yang ditampilkan adalah harga distributor dasar dan dapat berubah; konfirmasikan harga final melalui kanal penjualan resmi.
+Data spesifikasi teknis bersumber dari datasheet resmi produsen (BITZER, Copeland, Danfoss, dsb.). Website tidak menampilkan harga — seluruh permintaan harga langsung via WhatsApp sales resmi (+62 813-5000-3423) dan penawaran resmi disusun per kebutuhan, volume, dan lokasi proyek.

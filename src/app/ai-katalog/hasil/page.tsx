@@ -92,7 +92,6 @@ export default function AiKatalogHasilPage() {
                   source="ai-finder"
                   needType={result.criteria.aplikasi}
                   productName={result.items[0]?.name}
-                  estimate={result.items[0]?.price}
                 />
               </div>
             </div>
