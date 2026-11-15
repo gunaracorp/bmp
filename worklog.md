@@ -790,3 +790,24 @@ Stage Summary:
 - Kebijakan harga: website menampilkan NOL harga; setiap permintaan harga langsung ke WhatsApp +62 813-5000-3423 (BMP_WA_NUMBER di wa-message.ts) dengan pesan siap-kirim berisi produk & URL — konversi inquiry jadi satu klik
 - Saklar kebijakan sentral: src/lib/pricing.ts PRICING_MODE='public' mengembalikan harga tampil + JSON-LD Offer otomatis, tanpa menyentuh komponen lain
 - DB sehat & persisten (614 produk, 19 kategori), lint hijau, audit aset hijau, sitemap 618 URL, dwi-bahasa tetap utuh
+
+---
+
+Task ID: 8
+Agent: Z.ai (GLM) — Main Orchestrator
+Task: Permintaan owner — lanjutkan artikel blog SEO per brand kompresor (blog /insights) lalu push ke github.com/gunaracorp/bmp
+
+Work Log:
+- AUDIT AWAL: blog /insights KOSONG (sitemap hanya memuat /insights); arsitektur artikel tersimpan di tabel cms_articles (PGlite) yang sudah ter-track git
+- ARSITEKTUR KONTEN: src/content/brand-articles/ (types + 4 grup + index) — 25 artikel brand lengkap (Bitzer, Copeland, Danfoss, Daikin, Carrier, Panasonic, LG, Gree, Samsung, Sanyo, Hitachi, Mitsubishi, Toshiba, GMCC, Highly, York, Trane, Tecumseh, Bristol, Maneurop, Frascold, Dorin, Refcomp, Fusheng, Kulthorn)
+- SEO RANK MATH-STYLE per artikel: seoTitle ≤60 karakter (keyword di awal), meta description 150-160 char, slug keyword-first kompresor-<brand>-panduan-lengkap, struktur H2/H3, 4 FAQ per artikel, cover gambar katalog internal per brand, internal linking (kategori kompresor + 9 sub-kategori, katalog, AI Product Finder, artikel saudari), CTA WhatsApp wa.me/6281350003423 dengan pesan terformat, NOL harga di seluruh konten
+- AUTO-SEED: cms-db.ts ensureBrandArticlesSeeded() — insert-if-missing by slug (id `brand-<slug>`, onConflictDoNothing, tidak pernah menimpa edit admin), guard satu kali per proses, dipanggil dari getPublishedArticles/getArticleBySlug/getPublishedArticleSlugs → blog, sitemap, dan admin CMS otomatis terisi
+- SCHEMA UPGRADE: insights/[slug] kini mem-parse seksi "## FAQ" markdown menjadi FAQPage JSON-LD (@graph: Article + BreadcrumbList + FAQPage), publisher logo ImageObject, inLanguage id-ID, image absolut; insights index mendapat schema Blog + BlogPosting per artikel
+- VERIFIKASI: bun run lint exit 0; /insights 200 dengan 25 kartu artikel; halaman detail (Bitzer/Copeland/Dorin) 200 dengan JSON-LD Article+FAQPage+4 Question; sitemap.xml memuat 25 URL /insights/kompresor-*; meta title/description ter-render benar; smoke test 9 route kunci semua 200; rg "Rp [0-9]" di src/content = nol
+- PUSH: 2 commit ke origin main (fd42aa0 konten+schema, a8e2126 chore bersih artefak tool-results + fix .gitignore /skills/ & /tool-results); token push via env var tanpa persist di repo, remote URL dikembalikan bersih setelah push
+
+Stage Summary:
+- Blog /insights dari 0 menjadi 25 artikel brand SEO (±700 kata per artikel) — topik "kompresor <brand>" kini punya landing content lengkap di atas katalog produk, memperluas jangkauan query informasional Google sebelum transaksional
+- Pipeline artikel ter-institutionalize: tambah artikel brand baru = tambah 1 objek di src/content/brand-articles, auto-live di blog + sitemap + admin tanpa konfigurasi
+- Schema Blog + FAQPage + Article + BreadcrumbList lengkap — modal Google Rich Results; 25 URL baru masuk sitemap otomatis
+- Repo github.com/gunaracorp/bmp sinkron (HEAD = a8e2126), lint hijau, seluruh route 200
