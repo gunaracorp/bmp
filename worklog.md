@@ -811,3 +811,24 @@ Stage Summary:
 - Pipeline artikel ter-institutionalize: tambah artikel brand baru = tambah 1 objek di src/content/brand-articles, auto-live di blog + sitemap + admin tanpa konfigurasi
 - Schema Blog + FAQPage + Article + BreadcrumbList lengkap — modal Google Rich Results; 25 URL baru masuk sitemap otomatis
 - Repo github.com/gunaracorp/bmp sinkron (HEAD = a8e2126), lint hijau, seluruh route 200
+
+---
+
+Task ID: 9
+Agent: Z.ai (GLM) — Main Orchestrator
+Task: Lanjutkan to-do yang belum selesai — verifikasi blog SEO per brand + pemulihan PGlite korup + push seluruh pekerjaan ke github.com/gunaracorp/bmp
+
+Work Log:
+- AUDIT KEADAAN: 25 artikel brand Task 8 sudah lengkap & sudah di-push (remote main = 0928e58); sisa pekerjaan = 1 commit lokal belum ter-push + DB PGlite runtime korup (semua rute 500)
+- DIAGNOSIS PEMULIHAN (berlapis): (1) server 500 "RuntimeError: Aborted()" dari PGlite WASM; (2) postmaster.pid basi berisi PID -42 dari sesi sandbox sebelumnya — dihapus manual lalu server direstart; (3) cache Turbopack korup lagi ("Failed to restore task data (corrupted database or bug)") — rm -rf .next; (4) test-pglite.mjs tetap GAGAL bahkan setelah git checkout -- db/pglite-data → snapshot DB yang ter-commit sendiri sudah tidak konsisten (kasus sama dengan Task 6: commit data dir PGlite yang hidup menghasilkan snapshot rusak)
+- HARDENING dev-guard.mjs: fungsi baru removeStalePostmasterPid() — postmaster.pid dihapus otomatis saat boot bila PID-nya negatif atau tidak ada di /proc (PGlite in-process, PID harus hidup di sandbox yang sama) → kelas kegagalan "Aborted() saat init" tidak akan kambuh lewat jalur pid basi
+- PEMULIHAN DATABASE VIA PIPELINE RESMI (deterministik, semua slug & gambar identik): rm -rf db/pglite-data → init-pglite-schema.ts (8 tabel) → prisma seed (10 kategori, 120 produk, 7 testimoni; SQLite db/custom.db utuh) → migrate-sqlite-to-pglite.ts → generate-compressor-catalog.ts (500 produk + 500 gambar unik, 0 gagal, seed mulberry32(20250101)) → real-bitzer-catalog.ts (24 Bitzer fiktif dihapus, 18 model asli diinsert, 18 gambar re-badge, harga 596 produk dinol-kan) → init-sales-tables.ts (5 tabel sales engine)
+- HASIL DB SEHAT: PostgreSQL 18.6 (PGlite 0.5.11), 19 kategori, 614 produk, waitReady OK — snapshot biner baru di-commit sebagai state baseline yang benar
+- VERIFIKASI PENUH pasca-pulihan: /, /produk, /insights, /sitemap.xml, /robots.txt, /llms.txt, detail Bitzer (bitzer-2dc-3-2y-semi-hermetik-octagon), artikel /insights/kompresor-bitzer-panduan-lengkap & kompresor-dorin-panduan-lengkap, /ai-katalog, /quote, /compare — SEMUA 200; sitemap.xml 662 URL dengan 25 URL /insights/kompresor-*; JSON-LD halaman artikel lengkap (Article, FAQPage, BreadcrumbList, Question, Answer, Organization HVACBusiness, WebSite, SearchAction, ImageObject); CTA wa.me/6281350003423 aktif; NOL kebocoran "Rp <angka>" di halaman katalog
+- PUSH: seluruh state (hardening dev-guard + snapshot DB sehat + worklog) di-commit dan di-push ke origin main dengan token via env var; remote URL dikembalikan bersih setelah push; token tidak pernah tersimpan di file repo
+
+Stage Summary:
+- To-do lama dinyatakan tuntas dengan bukti: 25 artikel brand SEO live, sitemap 662 URL, JSON-LD lengkap, nol harga di UI
+- DB PGlite kembali sehat via pipeline deterministik (614 produk, 19 kategori, 18 Bitzer asli, tabel sales lengkap) — snapshot commit kini adalah baseline yang benar-benar bisa dibuka
+- dev-guard.mjs kini menyembuhkan 3 kelas kegagalan boot: direktori runtime hilang, postmaster.pid basi, cache Turbopack korup
+- Repo github.com/gunaracorp/bmp sinkron penuh; lint & seluruh route 200

@@ -7,7 +7,10 @@
  *    kosong ini sering hilang saat sandbox di-recycle, sehingga Postgres
  *    gagal start (FATAL "could not open directory \"pg_notify\"") dan halaman
  *    melempar "PGlite failed to initialize properly" (digest 4014266242).
- * 2. Mendeteksi panic Turbopack akibat cache `.next` korup ("Failed to
+ * 2. Menghapus postmaster.pid basi. Setelah recycle, PID di file itu tidak
+ *    pernah ada lagi di /proc (bahkan bisa negatif) — kalau dibiarkan, PGlite
+ *    WASM abort saat init ("RuntimeError: Aborted()") dan semua rute 500.
+ * 3. Mendeteksi panic Turbopack akibat cache `.next` korup ("Failed to
  *    restore task data (corrupted database or bug)") yang tertinggal saat
  *    recycle terjadi di tengah compile, lalu menghapus cache agar Turbopack
  *    melakukan kompilasi ulang yang bersih.
@@ -45,6 +48,33 @@ function ensurePgliteRuntimeDirs() {
   }
 }
 
+/**
+ * Hapus postmaster.pid basi: PGlite menjalankan Postgres in-process,
+ * jadi PID di file itu HARUS proses hidup pada sandbox ini. PID negatif
+ * atau yang tidak ada di /proc berarti sisa sesi lama — wajib dibuang
+ * sebelum PGlite diinisialisasi, jika tidak WASM abort (Aborted()).
+ */
+function removeStalePostmasterPid() {
+  const dataDir = path.join(process.cwd(), 'db', 'pglite-data');
+  const pidFile = path.join(dataDir, 'postmaster.pid');
+  if (!fs.existsSync(pidFile)) return;
+  try {
+    const firstLine = fs.readFileSync(pidFile, 'utf8').split('\n')[0]?.trim() ?? '';
+    const pid = Number.parseInt(firstLine, 10);
+    const alive = Number.isInteger(pid) && pid > 0 && fs.existsSync(`/proc/${pid}`);
+    if (alive) {
+      console.log(`[dev-guard] postmaster.pid PID ${pid} masih hidup — dibiarkan.`);
+      return;
+    }
+    fs.rmSync(pidFile, { force: true });
+    console.log(
+      `[dev-guard] postmaster.pid basi dihapus (PID "${firstLine}" tidak ada di /proc) — PGlite bisa init bersih.`,
+    );
+  } catch {
+    /* abaikan */
+  }
+}
+
 function cleanCorruptTurbopackCache() {
   try {
     const panics = fs.readdirSync(os.tmpdir()).filter((f) => f.startsWith('next-panic-'));
@@ -68,5 +98,6 @@ function cleanCorruptTurbopackCache() {
 }
 
 ensurePgliteRuntimeDirs();
+removeStalePostmasterPid();
 cleanCorruptTurbopackCache();
-console.log('[dev-guard] Siap: direktori runtime PGlite terjamin, cache diperiksa.');
+console.log('[dev-guard] Siap: direktori runtime PGlite terjamin, postmaster.pid diperiksa, cache diperiksa.');
