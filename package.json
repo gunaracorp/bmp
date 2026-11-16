@@ -15,6 +15,9 @@
     "db:migrate": "prisma migrate dev",
     "db:reset": "prisma migrate reset",
     "db:seed": "bun prisma/seed.ts",
+    "db:init-neon": "bun scripts/init-neon-schema.ts",
+    "db:migrate-neon": "bun scripts/migrate-pglite-to-neon.ts",
+    "db:test-remote": "bun scripts/test-remote-write.ts",
     "check:assets": "bun scripts/check-assets.ts",
     "predeploy": "bun run check:assets && bun run lint",
     "setup": "bun install && bun run db:generate && bun run check:assets"
@@ -95,6 +98,7 @@
     "zustand": "^5.0.6"
   },
   "devDependencies": {
+    "@electric-sql/pglite-socket": "^0.2.19",
     "@tailwindcss/postcss": "^4",
     "@types/pg": "^8.23.1",
     "@types/react": "^19",

@@ -1,7 +1,7 @@
 import { and, eq, exists, inArray, isNull, lt, ne, notInArray, or, sql } from 'drizzle-orm';
-import { drizzle } from 'drizzle-orm/pglite';
 import { bigint, boolean, doublePrecision, integer, pgTable, text, timestamp, uniqueIndex } from 'drizzle-orm/pg-core';
-import { getPgliteSync, resolvePgliteDataDir } from '@/lib/pglite-client';
+import { createBmpDrizzle, createStickyRawClient } from '@/lib/db-driver';
+import { resolvePgliteDataDir } from '@/lib/pglite-client';
 import { brandArticles } from '@/content/brand-articles';
 
 export const cmsArticles = pgTable('cms_articles', {
@@ -112,10 +112,15 @@ const globalForCms = globalThis as typeof globalThis & {
 };
 
 function createCmsDrizzle() {
-  const pglite = getPgliteSync();
   return {
-    pglite,
-    drizzleDb: drizzle(pglite, { schema: { cmsArticles, cmsSettings, categories, products, testimonials, productImageAssets } }),
+    drizzleDb: createBmpDrizzle({
+      cmsArticles,
+      cmsSettings,
+      categories,
+      products,
+      testimonials,
+      productImageAssets,
+    }),
   };
 }
 
@@ -125,14 +130,12 @@ function getCmsDrizzle() {
   return globalForCms.__bmpCmsDrizzle;
 }
 
-export const rawCmsClient = {
-  query: async <T = Record<string, unknown>>(text: string, params?: unknown[]) => {
-    const { pglite } = getCmsDrizzle();
-    const result = await pglite.query<T>(text, params);
-    return { rows: result.rows, rowCount: result.affectedRows ?? result.rows.length };
-  },
-  release: () => undefined,
-};
+/**
+ * Client raw seragam untuk kedua mode DB — di mode Pool memakai sticky client
+ * (SATU koneksi untuk banyak query) sehingga transaksi eksplisit (BEGIN/COMMIT)
+ * pada backup snapshot tetap benar.
+ */
+export const rawCmsClient = createStickyRawClient();
 
 export const cmsDb = getCmsDrizzle().drizzleDb;
 

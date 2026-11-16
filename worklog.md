@@ -891,3 +891,24 @@ Stage Summary:
 - Tiga kelas kegagalan deploy Vercel ditutup dengan bukti uji dua jalur: pid hantu dibersihkan otomatis saat boot, DB otomatis disalin ke /tmp di filesystem read-only, snapshot terjamin masuk bundle serverless — situs kini layak tampil di Vercel
 - Build produksi (next build, perintah yang dijalankan Vercel) hijau penuh — deploy tidak akan gagal di tahap build
 - Repo github.com/gunaracorp/bmp sinkron; lint hijau; snapshot DB tetap baseline bersih
+
+---
+
+Task ID: 13
+Agent: Z.ai (GLM) — Main Orchestrator
+Task: Permintaan owner — sambungkan situs ke Neon Postgres gratis agar semua data tersimpan permanen (tidak lagi ephemeral per instance di Vercel)
+
+Work Log:
+- ARSITEKTUR DUAL-DRIVER: src/lib/db-driver.ts (baru) — bila DATABASE_URL ter-set → drizzle node-postgres via Pool pg (data persisten di Neon); bila tidak → fallback PGlite in-process (perilaku lokal/sandbox tetap utuh). SSL otomatis (sslmode di URL dihormati; host managed cloud default TLS); Pool singleton per instance dengan DATABASE_POOL_MAX; rawDbQuery() seragam dua mode; createStickyRawClient() memegang SATU koneksi Pool sampai release() — transaksi eksplisit backup (BEGIN/COMMIT) tetap benar di mode Pool
+- REFACTOR MINIMAL: cms-db.ts & sales-db.ts kini lewat createBmpDrizzle() — seluruh definisi tabel drizzle pg-core identik untuk kedua driver, NOL perubahan kode query; rawCmsClient menjadi sticky client
+- TOOLING MIGRASI (npm run): db:init-neon (init-neon-schema.ts — DDL 13 tabel IF NOT EXISTS), db:migrate-neon (migrate-pglite-to-neon.ts — salin penuh generik kolom-driven, batch 50 baris, ON CONFLICT DO NOTHING idempoten, sanitizer NUL, verifikasi jumlah per tabel), db:test-remote (test-remote-write.ts — INSERT drizzle → baca drizzle → verifikasi independen via pg murni → hapus)
+- UJI END-TO-END TANPA AKUN NEON: scripts/verify-neon-task13.sh — @electric-sql/pglite-socket menyajikan snapshot PGlite lewat WIRE PROTOCOL Postgres asli sebagai "Neon simulasi": skema 13 tabel dibuat, MIGRASI 681 BARIS PENUH (19 kategori, 614 produk, 7 testimoni, 41 artikel cms) 0 hilang, tulis-baca-hapus persisten terbukti lintas koneksi, next start dengan DATABASE_URL menyajikan seluruh situs 200 (434 sebutan Bitzer, sitemap 678 URL, kontak CS tampil, nol kebocoran harga)
+- UJI PAMUNGKAS SUMBER DATA: UPDATE nama produk di DB REMOTE SAJA → halaman /produk/<slug> langsung menampilkan nama baru (ZZBUKTIREMOTE) → dipulihkan ke nama asli; terbukti aplikasi membaca dari DATABASE_URL, bukan PGlite lokal. Kegagalan awal uji terbukti bug script uji (env var salah posisi argumen bun), bukan kode aplikasi
+- lint exit 0; next build hijau pasca-refactor; snapshot PGlite lokal tetap baseline bersih (disiplin Task 9); postmaster.pid kini benar-benar untracked (deletion yang sempat ter-unstage dari commit Task 12 kini masuk)
+- LANGKAH OWNER UNTUK AKTIF: (1) daftar neon.tech gratis → buat project → salin connection string (pooled, sslmode=require); (2) jalankan sekali: DATABASE_URL=... bun run db:init-neon && bun run db:migrate-neon (atau kirim URL ke AI untuk dieksekusi + diverifikasi); (3) Vercel → Settings → Environment Variables → tambahkan DATABASE_URL (Production+Preview) → Redeploy. Selanjutnya seluruh tulisan (lead, quote, edit admin CMS) tersimpan PERMANEN di Neon
+- CATATAN: tanpa DATABASE_URL (sandbox dev) perilaku lama PGlite tetap jalan — kompatibilitas penuh dua arah
+
+Stage Summary:
+- Website kini dual-mode siap produksi: lokal/preview → PGlite embedded; produksi → Neon Postgres persisten
+- Seluruh data katalog & CMS ter-migrasi teruji 681 baris tanpa kehilangan; jalur tulis persisten terbukti hingga level halaman produk
+- Tooling migrasi satu perintah per langkah, idempoten, aman diulang kapan pun

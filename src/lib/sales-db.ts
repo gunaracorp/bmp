@@ -1,12 +1,11 @@
 /**
  * Sales Engine DB — tabel quote, lead, dan rekomendasi produk.
- * Semua definisi memakai drizzle pg-core di atas PGlite in-process
- * (instance yang sama dengan cms-db.ts lewat pglite-client).
+ * Definisi drizzle pg-core di atas driver dual (DATABASE_URL → Postgres
+ * remote/Neon persisten, selain itu PGlite in-process) via db-driver.
  */
 import { sql } from 'drizzle-orm';
 import { boolean, doublePrecision, integer, pgTable, text, timestamp } from 'drizzle-orm/pg-core';
-import { drizzle } from 'drizzle-orm/pglite';
-import { getPgliteSync } from '@/lib/pglite-client';
+import { createBmpDrizzle } from '@/lib/db-driver';
 
 export const salesQuotes = pgTable('sales_quotes', {
   id: text('id').primaryKey(),
@@ -75,8 +74,7 @@ const globalForSales = globalThis as typeof globalThis & {
 };
 
 function createSalesDrizzle() {
-  const pglite = getPgliteSync();
-  return drizzle(pglite, { schema: { salesQuotes, quoteItems, leadRequests, productMatches, recommendationHistory } });
+  return createBmpDrizzle({ salesQuotes, quoteItems, leadRequests, productMatches, recommendationHistory });
 }
 
 export function getSalesDb() {
