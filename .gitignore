@@ -53,3 +53,6 @@ server.log
 # Skills directory
 /skills/
 /tool-results
+
+# Runtime artifact PGlite — tidak boleh ikut snapshot (pemicu 500 di deploy)
+db/pglite-data/postmaster.pid

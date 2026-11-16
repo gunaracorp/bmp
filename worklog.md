@@ -872,3 +872,22 @@ Stage Summary:
 - Situs kini menampilkan 2 kontak CS resmi di section kontak, footer seluruh halaman (termasuk 41 halaman artikel blog), halaman info "Hubungi Kami", dan structured data schema.org — Google dapat membaca contactPoint customer support per orang untuk rich results
 - To-do Task 10 ditutup tuntas dengan bukti: 41 artikel (25 merek + 9 tipe + 7 edukasi) semua 200, sitemap 678 URL, nol harga
 - Kontak CS terpusat satu file — penambahan CS berikutnya hanya edit src/lib/cs-contacts.ts, otomatis sebar ke semua titik
+
+---
+
+Task ID: 12
+Agent: Z.ai (GLM) — Main Orchestrator
+Task: Owner melaporkan website/Vercel "tidak tampil" — diagnosis seluruh bug, perbaiki bootstrap PGlite untuk produksi/serverless, uji build & runtime produksi dua jalur, lalu push
+
+Work Log:
+- DIAGNOSIS ROOT CAUSE (3 lapisan): (1) db/pglite-data/postmaster.pid berisi PID -42 IKUT TER-COMMIT (bukti: git show HEAD:db/pglite-data/postmaster.pid = "-42") — di Vercel setiap cold start PGlite membaca pid hantu → mengira DB dikunci instance lain → init WASM abort "RuntimeError: Aborted()" → 500 di seluruh halaman; kelas kegagalan yang sama dengan Task 9, kini ikut terbang ke deployment; (2) filesystem serverless Vercel read-only kecuali /tmp — PGlite wajib menulis WAL/lock → init gagal EROFS; (3) snapshot ±41 MB tidak dijamin masuk bundle serverless (file tracing Next.js tidak menangkap path dinamis process.cwd()) → risiko DB hilang/kosong di /var/task
+- FIX 1 — src/lib/pglite-client.ts ditulis ulang (bootstrap production-safe): removeStalePostmasterPid() portabel lintas-platform (sinyal 0; EPERM = proses hidup milik orang lain, ESRCH/pid invalid = basi → file dihapus); resolveWritableDataDir() dengan uji tulis NYATA (write-probe, bukan accessSync yang bisa tertipu DAC root) → bila read-only, snapshot disalin ke /tmp/pglite-data sekali per instance (marker PG_VERSION, idempoten, tanpa salin ulang saat warm); snapshot tidak ada di bundle → error dilempar JELAS berisi petunjuk perbaikan (bukan DB kosong diam-diam); env PGLITE_FORCE_TMP_COPY=1 & PGLITE_TMP_DIR tersedia untuk menguji jalur serverless di mesin lokal
+- FIX 2 — next.config.ts: outputFileTracingIncludes { '/**': ['./db/pglite-data/**'] } → snapshot ikut ke bundle setiap fungsi serverless; FIX 3 — postmaster.pid tidak lagi ter-track git (git rm --cached + .gitignore) → deployment tidak pernah lagi membawa pid hantu; FIX 4 — package.json engines node >=20.9.0
+- VERIFIKASI: bun run lint exit 0; next build sukses penuh (34 route ter-generate: ƒ dynamic DB-backed, ○ static); uji runtime produksi scripts/verify-prod-task12.sh dua jalur — JALUR A (normal): home/produk/insights/sitemap.xml semua 200, 434 sebutan Bitzer di /produk, sitemap 678 URL, kontak CS tampil; JALUR B (SIMULASI VERCEL: PGLITE_FORCE_TMP_COPY=1 + pid hantu -42 ditanam di snapshot): log membuktikan "[PGlite] filesystem read-only / copy dipaksa — salin snapshot → /tmp/pglite-data" dan "[PGlite] postmaster.pid basi dihapus (pid=-42) — pemulihan otomatis", seluruh route 200 dengan data utuh — jalur inilah yang dieksekusi Vercel saat cold start
+- SNAPSHOT HYGIENE: uji produksi sempat menulis db/pglite-data (pg_control/pg_wal) — dipulihkan ke baseline via git checkout sebelum commit (disiplin anti-snapshot-kotor dari Task 9); file-mode 644→755 pada 12 file sumber dari lingkungan dinormalisasi kembali
+- CATATAN ARSITEKTUR UNTUK OWNER: di Vercel data bersifat ephemeral per instance (edit admin CMS akan hilang saat cold start/redeploy) — untuk persistensi penuh langkah berikutnya: aktifkan Neon Postgres via DATABASE_URL (jalur penggantian driver drizzle node-postgres sudah disiapkan di komentar pglite-client.ts)
+
+Stage Summary:
+- Tiga kelas kegagalan deploy Vercel ditutup dengan bukti uji dua jalur: pid hantu dibersihkan otomatis saat boot, DB otomatis disalin ke /tmp di filesystem read-only, snapshot terjamin masuk bundle serverless — situs kini layak tampil di Vercel
+- Build produksi (next build, perintah yang dijalankan Vercel) hijau penuh — deploy tidak akan gagal di tahap build
+- Repo github.com/gunaracorp/bmp sinkron; lint hijau; snapshot DB tetap baseline bersih

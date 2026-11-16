@@ -2,6 +2,9 @@
   "name": "berkat-mandiri-pendingin",
   "version": "1.0.0",
   "private": true,
+  "engines": {
+    "node": ">=20.9.0"
+  },
   "scripts": {
     "dev": "node scripts/dev-guard.mjs && next dev -p 3000 2>&1 | tee dev.log",
     "build": "next build",

@@ -5,6 +5,12 @@ const nextConfig: NextConfig = {
     unoptimized: true,
   },
   serverExternalPackages: ['@electric-sql/pglite'],
+  // Snapshot PGlite (±41 MB) WAJIB ikut ke bundle serverless — di Vercel,
+  // file yang tidak di-trace Next.js tidak ada di /var/task sehingga DB
+  // gagal dibuka. Glob ini memasukkan db/pglite-data ke setiap fungsi.
+  outputFileTracingIncludes: {
+    '/**': ['./db/pglite-data/**'],
+  },
   typescript: {
     ignoreBuildErrors: true,
   },
