@@ -931,3 +931,23 @@ Stage Summary:
 - Driver dual-mode kini kebal env hostile: file:/URL sampah tidak bisa lagi men-sabotase mode PGlite
 - Status integrasi: KODE 100% SIAP — tinggal connection string Neon asli dari owner untuk db:init-neon + db:migrate-neon + set DATABASE_URL di Vercel
 
+---
+
+Task ID: 13-c (AKTIVASI NEON ASLI)
+Agent: Z.ai (GLM) — Main Orchestrator
+Task: Owner kirim connection string Neon asli (project neon-cyan-dog, pooled endpoint ep-dawn-fog-b8mrl6tz, AWS US East 1) — aktifkan, migrasikan seluruh data, buktikan situs hidup dari Neon
+
+Work Log:
+- INSPEKSI AWAL: koneksi Neon sukses (PostgreSQL 18.7) — database ternyata berisi jejak eksperimen scaffold lama (1000 produk Embraco, 1 kategori, tabel skema prisma lama). TIDAK pernah dilayani publik (website selalu jalan dari PGlite lokal) → dibackup CSV ke /tmp/neon-backup (1001 baris) lalu 8 tabel lama di-DROP CASCADE
+- SKEMA: init-neon-schema.ts membuat 13 tabel bersih (IF NOT EXISTS)
+- MIGRASI RESMI: 681 baris snapshot PGlite → Neon, 0 hilang (19 kategori, 614 produk, 7 testimoni, 41 artikel CMS; tabel transaksi kosong siap pakai)
+- UJI TULIS PERSISTEN di Neon asli: INSERT drizzle → baca balik → verifikasi independen pg murni → hapus; log "[DB] Mode REMOTE — PostgreSQL @ ep-dawn-fog...neon.tech"
+- BUKTI PAMUNGKAS: next start produksi dengan DATABASE_URL Neon → HOME/produk/insights/artikel 200, sitemap 678 URL, 434 sebutan Bitzer, kontak CS Acep & Gugun tampil, 0 kebocoran harga, 0 error; snapshot PGlite lokal TIDAK tersentuh (repo bersih) karena aplikasi murni membaca Neon
+- Keamanan: connection string hanya lewat env var per perintah, tidak pernah masuk file repo; git grep ghp_ bersih
+- Catatan operasional: Neon free tier auto-suspend compute setelah idle — request pertama setelah tidur membangunkan compute (latensi ±1-2 detik sekali saja); pooler endpoint dipakai (cocok serverless/Vercel)
+
+Stage Summary:
+- Data resmi BMP kini PERMANEN di Neon Postgres: seluruh lead, quote, dan edit admin CMS tersimpan abadi lintas restart/redeploy/cold start
+- Sandbox dev lokal tetap PGlite (URL file: diabaikan driver) — dua dunia damai tanpa konflik
+- Tinggal satu langkah owner: set DATABASE_URL di Vercel + Redeploy
+
