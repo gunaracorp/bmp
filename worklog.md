@@ -912,3 +912,22 @@ Stage Summary:
 - Website kini dual-mode siap produksi: lokal/preview → PGlite embedded; produksi → Neon Postgres persisten
 - Seluruh data katalog & CMS ter-migrasi teruji 681 baris tanpa kehilangan; jalur tulis persisten terbukti hingga level halaman produk
 - Tooling migrasi satu perintah per langkah, idempoten, aman diulang kapan pun
+
+---
+
+Task ID: 13-b (lanjutan)
+Agent: Z.ai (GLM) — Main Orchestrator
+Task: Owner sudah punya akun Neon (project "neon-cyan-dog", AWS US East 1) — audit ulang integrasi, perbaiki bug yang ditemukan, verifikasi ulang dua jalur, push seluruh commit tertahan
+
+Work Log:
+- AUDIT: 3 commit (Task 11, 12, 13) ternyata BELUM ter-push ke GitHub (origin/main masih di ad1cdff) — push kini dijalankan dengan token baru via env var
+- FIX KRITIS db-driver.ts: isRemoteDatabase() sebelumnya hanya cek truthy DATABASE_URL — URL sisa scaffold `file:/...db/custom.db` (ada di .env sandbox & env platform) ikut dianggap mode Neon sehingga pg Pool mencoba konek ke "file:" dan semua query bisa gagal. Kini HANYA URL ber-skema postgres://(ql):// yang memicu mode remote; URL lain otomatis fallback PGlite
+- getRemotePool() kini mencatat host target di log ("[DB] Mode REMOTE — PostgreSQL @ <host>", tanpa kredensial) untuk verifikasi visual saat Neon asli aktif
+- UJI ULANG JALUR 1 (fallback, DATABASE_URL=file:... dipaksa): next start → HOME/PRODUK/SITEMAP 200, 434 sebutan Bitzer, log TANPA "Mode REMOTE", 0 error — fallback kebal terhadap env hostile
+- UJI ULANG JALUR 2 (remote E2E, verify-neon-task13.sh): wire server siap → skema 13 tabel → migrasi 681 baris 0 hilang → tulis-baca-hapus persisten (drizzle + pg murni) → situs hidup dari DB remote (sitemap 678 URL, kontak CS tampil, 0 kebocoran harga)
+- next build hijau pasca-fix; lint bersih; snapshot PGlite lokal tetap baseline bersih
+
+Stage Summary:
+- Driver dual-mode kini kebal env hostile: file:/URL sampah tidak bisa lagi men-sabotase mode PGlite
+- Status integrasi: KODE 100% SIAP — tinggal connection string Neon asli dari owner untuk db:init-neon + db:migrate-neon + set DATABASE_URL di Vercel
+

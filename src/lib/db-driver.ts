@@ -23,9 +23,16 @@ const globalForDb = globalThis as typeof globalThis & {
   __bmpPgPool?: Pool;
 };
 
-/** Mode remote (Neon/Postgres) aktif? */
+/**
+ * Mode remote (Neon/Postgres) aktif?
+ * HANYA URL ber-skema postgres:// (atau postgresql://) yang dianggap remote.
+ * URL lain seperti sisa scaffold `file:/...db/custom.db` (ada di .env sandbox)
+ * HARUS diabaikan — kalau tidak, pg Pool mencoba konek ke "file:" dan semua
+ * query gagal padahal seharusnya fallback PGlite.
+ */
 export function isRemoteDatabase(): boolean {
-  return Boolean(process.env.DATABASE_URL);
+  const url = process.env.DATABASE_URL ?? '';
+  return /^postgres(ql)?:\/\//i.test(url);
 }
 
 /** SSL otomatis: hormati sslmode di URL; host managed cloud default TLS. */
@@ -51,7 +58,14 @@ export function getRemotePool(): Pool {
     globalForDb.__bmpPgPool.on('error', (err) => {
       console.error('[DB] Pool error:', err.message);
     });
-    console.log('[DB] Mode REMOTE — PostgreSQL via DATABASE_URL');
+    const host = (() => {
+      try {
+        return new URL(process.env.DATABASE_URL ?? '').host;
+      } catch {
+        return '(host tidak terbaca)';
+      }
+    })();
+    console.log(`[DB] Mode REMOTE — PostgreSQL @ ${host}`);
   }
   return globalForDb.__bmpPgPool;
 }
