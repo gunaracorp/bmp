@@ -951,3 +951,25 @@ Stage Summary:
 - Sandbox dev lokal tetap PGlite (URL file: diabaikan driver) — dua dunia damai tanpa konflik
 - Tinggal satu langkah owner: set DATABASE_URL di Vercel + Redeploy
 
+---
+
+Task ID: 13-d (INCIDENT: situs live 500 di Vercel)
+Agent: Z.ai (GLM) — Main Orchestrator
+Task: Owner laporkan www.berkatpendingin.web.id tidak tampil — "Application error: a server-side exception has occurred... Digest: 3099164924" (sehari sebelumnya normal)
+
+Work Log:
+- DIAGNOSIS DIFFERENSIAL LIVE: rute statis 200 (robots.txt, /quote, /admin/login) vs rute dinamis 500 (/, /produk, /insights, sitemap.xml) → crash PASTI di layer DB runtime; build sukses (deployment hidup, halaman prerender aman)
+- REPRODUKSI NODE MURNI + /api/db-health: URL owner benar bentuk (tanpa kutip, host neon.tech) tapi Neon menolak — 28P01 "password authentication failed for user 'neondb_owner'" via pg murni JUGA → KREDENSIAL DI-ROTATE di sisi Neon setelah string diberikan pagi hari (migrasi 681 baris sempat sukses); deployment Vercel yang memakai string sama mengalami 500 yang identik
+- FIX 1 — ENDPOINT DIAGNOSTIK /api/db-health: selalu 200 JSON; mode DB, sanitasi DATABASE_URL (host/sslmode/deteksi kutip, tanpa kredensial), hasil query nyata (produk/kategori/artikel), state failover; memudahkan diagnosis live tanpa akses log Vercel
+- FIX 2 — next.config: serverExternalPackages += 'pg' (praktik standar Vercel+Neon)
+- FIX 3 — getRemotePool: connectionTimeoutMillis 15000 (gagal cepat dengan pesan jelas, tidak menggantung sampai timeout Lambda)
+- FIX 4 (UTAMA) — FAILOVER RESILIENT db-driver.ts: ResilientPool membungkus Pool pg; error auth/koneksi (28P01/28000/28P00, SQLSTATE 08xxx, 53300/57P03, ECONNREFUSED/ENOTFOUND/ETIMEDOUT/ECONNRESET/EAI_AGAIN) → tandai dead → SEMUA query berikutnya otomatis dilayani snapshot PGlite → SITUS PUBLIK TETAP HIDUP saat Neon bermasalah (degraded: tulisan baru ephemeral, log peringatan jelas); error SQL biasa TIDAK memicu failover; sticky client & transaksi ikut failover
+- FIX 5 — TRANSLASI PROTOKOL drizzle node-postgres → PGlite: normalisasi dua gaya pemanggilan client (string ATAU objek {name,text,rowMode:'array',types}); rowMode array dilayani dukungan NATIVE PGlite (urutan kolom identik pg — aman JOIN kolom duplikat); tanpa ini failover melempar 08P01 "invalid message format" / mapping rusak (Bitzer 218 dari 434)
+- VERIFIKASI PENUH: (a) kredensial salah + runtime Node murni → SEMUA halaman 200 via snapshot, Bitzer 434 tepat, sitemap 678, health ok (614 produk/19 kategori/41 artikel), failover state mencatat 28P01; (b) kredensial benar (wire E2E) → seluruh jalur hijau via remote; (c) lint + build bersih; snapshot PGlite tak tersentuh
+- LANGKAH OWNER: reset password Neon (dashboard → Reset password) → string baru → update DATABASE_URL di Vercel → Redeploy; sementara itu situs live otomatis pulih dari snapshot setelah deploy commit ini
+
+Stage Summary:
+- Situs kini ANTI-DOWN: Neon bermasalah/kredensial salah → otomatis hidup dari snapshot; Neon pulih → permanen otomatis kembali
+- Diagnosis live tinggal buka /api/db-health — tanpa akses log sekalipun
+- Root cause Vercel: kredensial Neon usang (28P01) — tunggu owner reset password + update env
+
